@@ -16,7 +16,6 @@ function NavBar() {
         <span className='flex gap-4 list-none'>
           <CustomLink className='[all:unset] cursor-pointer text-[1.5rem]' to="/">Home</CustomLink>
           <CustomLink className='[all:unset] cursor-pointer text-[1.5rem]' to="/drivers">Drivers</CustomLink>
-          <CustomLink className='[all:unset] cursor-pointer text-[1.5rem]' to="/teams">Teams</CustomLink>
         </span>
       </div>
     </nav>
