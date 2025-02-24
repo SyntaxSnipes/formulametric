@@ -5,7 +5,7 @@ import express from "express";
 import mysql from "mysql2/promise";
 import axios from "axios";
 import cors from "cors";
-import { abs, sqrt, floor, e, re } from "mathjs";
+import { abs, sqrt, floor, e, re, count } from "mathjs";
 
 // Initialize Express
 const app = express();
@@ -88,18 +88,16 @@ async function updateDB() {
       for (const race of races) {
         console.log(`Processing race: ${race.raceName} (${race.date})`);
         const { round, raceName, date } = race;
-        let SafetyIncidents = 0;
         const raceSQLQuery = `
-        INSERT INTO Races (RoundNo, Track, Date, SafetyIncidents, SeasonID)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO Races (RoundNo, Track, Date, SeasonID)
+        VALUES (?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
             RoundNo = VALUES(RoundNo),
             Track = VALUES(Track),
             Date = VALUES(Date),
-            SafetyIncidents = VALUES(SafetyIncidents),
             SeasonID = VALUES(SeasonID);
         `;
-        await db.query(raceSQLQuery, [round, raceName, date, SafetyIncidents, seasonID]);
+        await db.query(raceSQLQuery, [round, raceName, date, seasonID]);
         
         const [raceRows] = await db.query(
           `SELECT RaceID FROM Races WHERE Track = ? AND Date = ?`, [raceName, date]
@@ -167,10 +165,6 @@ async function updateDB() {
               console.error(`Driver with API_DriverID ${driverData.driverId} not found in DB`);
             }
             try {
-              if (!driverRow) {
-                console.error(`Driver not found: ${driverData.driverId}`);
-                continue;
-              }
 
               // Perform the insertion
               const [insertResult] = await db.query(
@@ -197,10 +191,6 @@ async function updateDB() {
               console.error(`Database insertion error for ${raceName}:`, error.message);
             }
           }
-          const updateQuery =`
-            UPDATE Races SET SafetyIncidents = ? WHERE RaceID = ? AND Date = ?;
-          `;
-          await db.query(updateQuery, [SafetyIncidents, raceID, date]);
         } catch (error) {
           console.error(`Failed to fetch results for ${raceName} (${date}): ${error.message}`);
         }
@@ -221,9 +211,40 @@ for (const driverRow of driverRows) {
   const driverID = driverRow.DriverID;
   const driverName = `${driverRow.FirstName} ${driverRow.LastName}`;
 
+  // Encode driver name properly for URL formatting
+const driverId = encodeURIComponent(driverRow.API_DriverID.toLowerCase());
+const standingsUrl = `https://api.jolpi.ca/ergast/f1/${year}/drivers/${driverId}/driverstandings.json`;
+
+console.log(`📡 Fetching standings from: ${standingsUrl}`);
+
+// Define points and position before the try block
+let points = 0; // Ensure it's always defined
+let position = null;
+
+try {
+  const { data } = await axios.get(standingsUrl);
+  const standingsLists = data?.MRData?.StandingsTable?.StandingsLists || [];
+
+  const driverStanding = standingsLists.length > 0 && standingsLists[0].DriverStandings.length > 0
+    ? standingsLists[0].DriverStandings[0]
+    : null;
+
+  if (driverStanding) {
+    points = parseInt(driverStanding.points, 10) || 0; // Convert points to an integer safely
+    position = parseInt(driverStanding.position, 10) || null; // Convert position safely
+
+    console.log(`📊 ${driverRow.FirstName} ${driverRow.LastName} (${year}) -> Position: ${position}, Points: ${points}`);
+  } else {
+    console.warn(`⚠️ No standings found for ${driverRow.FirstName} ${driverRow.LastName} (${year})`);
+  }
+} catch (error) {
+  console.error(`❌ Failed to fetch standings for ${driverRow.FirstName} ${driverRow.LastName} (${year}): ${error.message}`);
+  points = 0; // Set default to prevent undefined errors
+}
+
   // Fetch positions and statuses for filtering
   const [positionsQueryResult] = await db.query(
-    `SELECT Races.Track, Results.Position, Results.Status, Results.RaceID 
+    `SELECT Races.Track, Results.Position, Results.Status, Results.RaceID
      FROM Results 
      JOIN Races ON Results.RaceID = Races.RaceID
      WHERE Races.SeasonID = ? AND Results.DriverID = ? 
@@ -257,25 +278,57 @@ for (const driverRow of driverRows) {
 
   // Calculate Pc with filtered positions
   const n = validPositions.length;
-  const sump = validPositions.reduce((sum, pos) => sum + pos, 0);
-  const sump2 = validPositions.reduce((sum, pos) => sum + pos ** 2, 0);
+  const sumpos = validPositions.reduce((sum, pos) => sum + pos, 0);
+  const sumpos2 = validPositions.reduce((sum, pos) => sum + pos ** 2, 0);
   const sumr = validPositions.length > 0 ? 
   [...Array(validPositions.length).keys()].reduce((sum, r) => sum + (r + 1), 0) : 0;
-
-const sumrp = validPositions.length > 0 ? 
+  const sumrp = validPositions.length > 0 ? 
   validPositions.reduce((sum, pos, i) => sum + (i + 1) * pos, 0) : 0;
+
+
+console.log(`📡 Fetching standings from: ${standingsUrl}`);
+
+try {
+  const { data } = await axios.get(standingsUrl);
+  const standingsLists = data?.MRData?.StandingsTable?.StandingsLists || [];
+
+  const driverStanding = standingsLists.length > 0 && standingsLists[0].DriverStandings.length > 0
+    ? standingsLists[0].DriverStandings[0]
+    : null;
+
+// 🔥 FIX: Move `points` definition here so it exists in all cases
+let points = 0;
+let position = null;  // Ensure position is also defined
+
+if (driverStanding) {
+  points = parseInt(driverStanding.points, 10) || 0; // Ensure points is a number
+  position = parseInt(driverStanding.position, 10) || null;
+  console.log(`📊 ${driverRow.FirstName} ${driverRow.LastName} (${year}) -> Position: ${position}, Points: ${points}`);
+} else {
+  console.warn(`⚠️ No standings found for ${driverRow.FirstName} ${driverRow.LastName} (${year})`);
+}
+
+} catch (error) {
+  console.error(`❌ Failed to fetch standings for ${driverRow.FirstName} ${driverRow.LastName} (${year}): ${error.message}`);
+  points = 0; // ✅ Ensure points is **always** defined
+}
+
   
-  console.log(`Driver ${driverName} (${driverID}): sump=${sump}, sump2=${sump2}, n=${n}`);
   try {
-    const Pc = calculatePc(sump, sump2, n);
-    const Pt = calculatePt(sumr, sump, sumrp, n);
-    console.log(`Driver ${driverName} (${driverID}) has Pc: ${Pc} and Pt: ${Pt}`);
+    const Pc = calculatePc(sumpos, sumpos2, n) || 0;  // Ensure it's a number
+    const Pt = calculatePt(validPositions) || 0;      // Ensure it's a number
+    const Pa = calculatePa(points, position, driverRows.length) || 0
+    console.log(`Driver ${driverName} (${driverID}) has Pc: ${Pc}, Pt: ${Pt}, and Pa: ${Pa}`);
+
     const updateQuery = (`
-    INSERT INTO PerformanceMetrics (DriverID, SeasonID, PConsistency, PTrajectory)
-    VALUES (?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE PConsistency = VALUES(PConsistency), PTrajectory = VALUES(PTrajectory);
+      INSERT INTO PerformanceMetrics (DriverID, SeasonID, PConsistency, PTrajectory, PAbsolute)
+      VALUES (?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE 
+        PConsistency = VALUES(PConsistency), 
+        PTrajectory = VALUES(PTrajectory), 
+        PAbsolute = VALUES(PAbsolute);
     `);
-    await db.query(updateQuery, [driverID, seasonID, Pc, Pt]);
+    const [result] = await db.query(updateQuery, [driverID, seasonID, Pc, Pt, Pa]);
   } catch (error) {
     console.error(`Error calculating Pc for Driver ${driverName} (${driverID}): ${error.message}`);
   }
@@ -312,7 +365,7 @@ app.get("/Pc", async (req, res) => {
       const [driverRows] = await db.query(
         `SELECT DriverID, FirstName, LastName FROM Drivers`
       );
-
+      
       for (const driverRow of driverRows) {
         const { DriverID, FirstName, LastName } = driverRow;
         const driverName = `${FirstName} ${LastName}`;
@@ -356,29 +409,42 @@ app.get("/Pc", async (req, res) => {
 
         // Calculate Pc
         const n = validPositions.length;
-        const sump = validPositions.reduce((sum, pos) => sum + pos, 0);
-        const sump2 = validPositions.reduce((sum, pos) => sum + pos ** 2, 0);
+        const sumpos = validPositions.reduce((sum, pos) => sum + pos, 0);
+        const sumpos2 = validPositions.reduce((sum, pos) => sum + pos ** 2, 0);
         const sumr = validPositions.length > 0 ? 
         [...Array(validPositions.length).keys()].reduce((sum, r) => sum + (r + 1), 0) : 0;
+        for (let i = 0; i < validPositions.length; i++) {
+        }
+
       
+
+        const standingsResponse = await axios.get(`
+          https://api.jolpi.ca/ergast/f1/${Year}/drivers/${LastName.toLowerCase()}/driverstandings.json
+        `);
+        const standingsData = standingsResponse?.data?.MRData?.StandingsTable?.StandingsLists?.DriversStandings?.position || [];
+        const points = standingsResponse?.data?.MRData?.StandingsTable?.StandingsLists?.DriversStandings?.points || [];
+        console.log(`Calculating Pc with values: sumr=${sumr}, sumpos=${sumpos}, sumpos2=${sumpos2}, points=${points}, standing = ${standingsData}` );
+        
       const sumrp = validPositions.length > 0 ? 
         validPositions.reduce((sum, pos, i) => sum + (i + 1) * pos, 0) : 0;
        
-        console.log(`Calculating Pt with values: sumr=${sumr}, sump=${sump}, sumrp=${sumrp}`);
+        console.log(`Calculating Pt with values: sumr=${sumr}, sumpos=${sumpos}, sumrp=${sumrp}, points=${points}, standing = ${standingsData}` );
 
-        const Pc = calculatePc(sump, sump2, n);
-        const Pt = calculatePt(sumr, sump, sumrp, n);
+        const Pc = calculatePc(sumpos, sumpos2, n);
+        const Pt = calculatePt(validPositions);
+        const Pa = calculatePa(points, standingsData, driverRows.length);
 
         PcResults.push({
           driver: driverName,
           year: Year,
           Pc: Pc,
           Pt: Pt,
+          Pa: Pa,
           positions: validPositions,
         });
 
         console.log(
-          `Driver ${driverName} (${DriverID}) in Year ${Year} has Pc: ${Pc} and Pt: ${Pt}`
+          `Driver ${driverName} (${DriverID}) in Year ${Year} has Pc: ${Pc} and Pt: ${Pt } and Pa: ${Pa}`
         );
       }
     }
@@ -411,37 +477,60 @@ app.listen(PORT, () => {
 
 //FUNCTIONS TO CALCULATE THE P VALUES
 // Pc is the peformance metric of consistency
-// sumr is the sum of races (ordinal), sump is the sum of race points acheived, sumrp is the sum of the product of race and points, sumr2 is the sum of the square and sump2 is the sum of the square of the points, n is the number of data points (typically number of races)
-function calculatePc(sump, sump2, n) {
-  if (sump === 0 || n === 0 || sump2 === 0) return 0;
-  if (n<5) return null;
+// sumr is the sum of races (ordinal), sumpos is the sum of race points acheived, sumrp is the sum of the product of race and points, sumr2 is the sum of the square and
+//  sumpos2 is the sum of the square of the points, n is the number of data points (typically number of races)
+function calculatePc(sumpos, sumpos2, n) {
+  if (sumpos === 0 || n === 0 || sumpos2 === 0) return 0;
+  if (n < 5) return null;
 
   // Calculate mean and standard deviation
-  const mean = sump / n;
-  const std = Math.sqrt(sump2 / n - mean ** 2);
+  const mean = sumpos / n;
+  const std = Math.sqrt(sumpos2 / n - mean ** 2);
 
   // Calculate Pc
-  const Pc = 1/(1+(std/5));
-  return Pc;
+  const Pc = 1 - Math.min(1, (std / 4) ** 2) + 0.2;
+  return Math.max(0, Math.min(1, Pc));
 }
 
-function calculatePa(pDriver, dnfDriver, noPodium, n){
-  return 0.5 * (pDriver / 101) + 0.2 * (1 - dnfDriver / n) + 0.3 * (noPodium / n);
+function calculatePa(pDriver, standing, totalDrivers){
+  return 0.4 * (pDriver / 648) +  0.4 * (1 - (standing - 1) / Math.max(totalDrivers - 1, 1));
 }
 
 
-function calculatePt(sumr, sump, sumrp, n){
-  if (sumr === 0 || sump === 0 || sumrp === 0) {
-    console.warn("Invalid input for Pt calculation");
-    return null;
+function calculatePt(positions) {
+  if (!Array.isArray(positions) || positions.length < 8) {
+    console.warn("⚠️ Pt calculation skipped due to insufficient data");
+    return 0.5;  // Neutral trajectory if not enough races
   }
-  let m = ((sumr * sump) - sumrp) / (n ** 1.05);
-  m = Math.max(-15, Math.min(15, m));
-  let rawScore = 0.5 - (0.1 * m);
-  let scaledScore = Math.log1p(Math.abs(rawScore * 5)) / Math.log1p(5);
-  console.log(`DEBUG: m=${m}, rawScore=${rawScore}, scaledScore=${scaledScore}`);
-  return Math.max(0, Math.min(1, scaledScore));
+
+  let n = positions.length;
+  let qSize = Math.floor(n / 4);
+
+  // Extract quartiles
+  let Q1 = positions.slice(0, qSize);
+  let Q2 = positions.slice(qSize, 2 * qSize);
+  let Q3 = positions.slice(2 * qSize, 3 * qSize);
+  let Q4 = positions.slice(3 * qSize);
+
+  // Compute average positions for each quartile
+  let avgQ1 = Q1.reduce((sum, pos) => sum + pos, 0) / Q1.length;
+  let avgQ2 = Q2.reduce((sum, pos) => sum + pos, 0) / Q2.length;
+  let avgQ3 = Q3.reduce((sum, pos) => sum + pos, 0) / Q3.length;
+  let avgQ4 = Q4.reduce((sum, pos) => sum + pos, 0) / Q4.length;
+
+  // Compute trajectory trends
+  let longTermTrend = (avgQ1 - avgQ4) / Math.max(avgQ1, avgQ4);
+  let midTermTrend = (avgQ2 - avgQ3) / Math.max(avgQ2, avgQ3);
+
+  // Compute final trajectory score
+  let Pt = 0.5 + 0.15 * longTermTrend + 0.1 * midTermTrend;
+
+  console.log(`DEBUG: Q1=${avgQ1}, Q2=${avgQ2}, Q3=${avgQ3}, Q4=${avgQ4}`);
+  console.log(`DEBUG: LongTermTrend=${longTermTrend}, MidTermTrend=${midTermTrend}, Final Pt=${Pt}`);
+
+  return Number((Math.max(0, Math.min(1, Pt))).toPrecision(2));
 }
+
 
 // Pagg is the aggregate performance metric
 function calculatePagg(Pr, Pc, Pt, Pa) {
