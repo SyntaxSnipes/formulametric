@@ -39,7 +39,7 @@ async function isSeasonDataComplete(year) {
   try {
     // Fetch the race data from the API for the given year.
     const raceResponse = await axios.get(
-      `https://api.jolpi.ca/ergast/f1/${year}/races.json`
+      `https://api.jolpi.ca/ergast/f1/${year}/races.json`,
     );
     const racesFromAPI = raceResponse.data.MRData.RaceTable.Races || [];
     const expectedRaceCount = racesFromAPI.length;
@@ -47,7 +47,7 @@ async function isSeasonDataComplete(year) {
     // Check the Seasons table for the season entry.
     const [seasonRows] = await db.query(
       `SELECT SeasonID, NoRounds FROM Seasons WHERE Year = ?`,
-      [year]
+      [year],
     );
     if (seasonRows.length === 0) {
       // No season data exists at all.
@@ -61,7 +61,7 @@ async function isSeasonDataComplete(year) {
     // Check the Races table count for this season.
     const [raceCountRows] = await db.query(
       `SELECT COUNT(*) AS raceCount FROM Races WHERE SeasonID = ?`,
-      [seasonID]
+      [seasonID],
     );
     if (
       raceCountRows.length > 0 &&
@@ -73,7 +73,7 @@ async function isSeasonDataComplete(year) {
   } catch (error) {
     console.error(
       `Error checking completeness for season ${year}:`,
-      error.message
+      error.message,
     );
     return false; // If in doubt, force an update.
   }
@@ -81,9 +81,9 @@ async function isSeasonDataComplete(year) {
 
 //Here are the functions to update the database, decomposing the problem into smaller parts
 async function insertAllDrivers(year) {
-  await sleep(500);
+  await sleep(1000);
   const driverResponse = await axios.get(
-    `https://api.jolpi.ca/ergast/f1/${year}/drivers.json`
+    `https://api.jolpi.ca/ergast/f1/${year}/drivers.json`,
   );
   const drivers = driverResponse.data.MRData.DriverTable.Drivers || [];
   for (const driver of drivers) {
@@ -108,14 +108,14 @@ async function insertAllDrivers(year) {
   const driverMap = {};
 
   const [allDrivers] = await db.query(
-    `SELECT API_DriverID, DriverID FROM Drivers`
+    `SELECT API_DriverID, DriverID FROM Drivers`,
   );
   for (const d of allDrivers) {
     driverMap[d.API_DriverID] = d.DriverID;
   }
   // After inserting drivers from /drivers.json
   const standingsRes = await axios.get(
-    `https://api.jolpi.ca/ergast/f1/${year}/driverStandings.json`
+    `https://api.jolpi.ca/ergast/f1/${year}/driverStandings.json`,
   );
   const standingsList =
     standingsRes.data?.MRData?.StandingsTable?.StandingsLists?.[0]
@@ -146,11 +146,11 @@ async function insertAllDrivers(year) {
 
 async function assignTeams(year, driverMap) {
   const teamDrivers = {};
-  await sleep(500);
+  await sleep(1000);
   for (const [apiId, driverId] of Object.entries(driverMap)) {
     try {
       const teamResponse = await axios.get(
-        `https://api.jolpi.ca/ergast/f1/${year}/drivers/${apiId}/constructors.json`
+        `https://api.jolpi.ca/ergast/f1/${year}/drivers/${apiId}/constructors.json`,
       );
       const teamData =
         teamResponse.data.MRData.ConstructorTable.Constructors || [];
@@ -174,7 +174,7 @@ async function assignTeams(year, driverMap) {
   const teamMap = {};
   const [seasonRow] = await db.query(
     `SELECT SeasonID FROM Seasons WHERE Year = ?`,
-    [year]
+    [year],
   );
   const seasonID = seasonRow[0].SeasonID;
   const [raceCounts] = await db.query(
@@ -184,7 +184,7 @@ async function assignTeams(year, driverMap) {
     WHERE SeasonID = ?
     GROUP BY DriverID
   `,
-    [seasonID]
+    [seasonID],
   );
 
   const raceCountMap = {};
@@ -200,7 +200,7 @@ async function assignTeams(year, driverMap) {
 
     if (validMembers.length === 0) {
       console.warn(
-        `Skipping team ${teamName} due to no drivers with race data`
+        `Skipping team ${teamName} due to no drivers with race data`,
       );
       continue;
     }
@@ -228,7 +228,7 @@ async function assignTeams(year, driverMap) {
         teammate?.id || null,
         additional1,
         additional2,
-      ]
+      ],
     );
 
     teamMap[mainDriver.id] = teammate?.id || null;
@@ -239,16 +239,16 @@ async function assignTeams(year, driverMap) {
     console.log(
       `Main teammate(s) assigned in ${teamName}: ${mainDriver.id} ${
         teammate ? `and ${teammate.id}` : "(solo driver)"
-      }`
+      }`,
     );
   }
   return teamMap;
 }
 
 async function processRacesAndResults(year, driverMap) {
-  await sleep(500);
+  await sleep(1000);
   const raceResponse = await axios.get(
-    `https://api.jolpi.ca/ergast/f1/${year}/races.json`
+    `https://api.jolpi.ca/ergast/f1/${year}/races.json`,
   );
   const races = raceResponse.data.MRData.RaceTable?.Races || [];
   if (races.length === 0) {
@@ -258,12 +258,12 @@ async function processRacesAndResults(year, driverMap) {
   await db.query(
     `INSERT INTO Seasons (Year, NoRounds) VALUES (?, ?) 
       ON DUPLICATE KEY UPDATE NoRounds = VALUES(NoRounds)`,
-    [year, races.length]
+    [year, races.length],
   );
 
   const [[{ SeasonID: seasonID }]] = await db.query(
     `SELECT SeasonID FROM Seasons WHERE Year = ?`,
-    [year]
+    [year],
   );
 
   for (const race of races) {
@@ -282,7 +282,7 @@ async function processRacesAndResults(year, driverMap) {
 
     const [[{ RaceID: raceID }]] = await db.query(
       `SELECT RaceID FROM Races WHERE Track = ? AND Date = ?`,
-      [raceName, date]
+      [raceName, date],
     );
     if (!raceID) {
       console.error(`RaceID not found for ${raceName} on ${date}`);
@@ -314,7 +314,7 @@ async function processRacesAndResults(year, driverMap) {
         const driverId = driverMap[apiDriverID];
         if (!driverId) {
           console.error(
-            `Missing driver ID in results for ${raceName} (${date}).`
+            `Missing driver ID in results for ${raceName} (${date}).`,
           );
           continue;
         }
@@ -339,18 +339,18 @@ async function processRacesAndResults(year, driverMap) {
               result.FastestLap?.Time?.time || null,
               result.status || null,
               seasonID,
-            ]
+            ],
           );
         } catch (error) {
           console.error(
             `Database insertion error for ${raceName}:`,
-            error.message
+            error.message,
           );
         }
       }
     } catch (error) {
       console.error(
-        `Failed to fetch results for ${raceName} (${date}): ${error.message}`
+        `Failed to fetch results for ${raceName} (${date}): ${error.message}`,
       );
     }
   }
@@ -377,12 +377,12 @@ async function calculateAllMetrics(year, teamMap) {
   const mean = pointsList.reduce((a, b) => a + b, 0) / pointsList.length;
   const std = Math.sqrt(
     pointsList.reduce((sum, val) => sum + (val - mean) ** 2, 0) /
-      pointsList.length
+      pointsList.length,
   );
 
   const [[{ SeasonID: seasonID }]] = await db.query(
     `SELECT SeasonID FROM Seasons WHERE Year = ?`,
-    [year]
+    [year],
   );
   const [driverRows] = await db.query(`
     SELECT DriverID, FirstName, LastName, API_DriverID FROM Drivers
@@ -402,7 +402,7 @@ async function calculateAllMetrics(year, teamMap) {
         JOIN Races ON Results.RaceID = Races.RaceID
         WHERE Races.SeasonID = ? AND Results.DriverID = ?
        ORDER BY Races.RoundNo ASC`,
-      [seasonID, driverId]
+      [seasonID, driverId],
     );
 
     if (!positionsQueryResult.length) {
@@ -426,7 +426,7 @@ async function calculateAllMetrics(year, teamMap) {
             "Disqualified",
             "Water pressure",
             "Front wing",
-          ].includes(row.Status)
+          ].includes(row.Status),
       )
       .map((row) => row.Position);
 
@@ -447,7 +447,7 @@ async function calculateAllMetrics(year, teamMap) {
         ? ` (Ignored: ${row.Status})`
         : "";
       console.log(
-        `- Track: ${row.Track}, Position: ${row.Position}${statusNote}`
+        `- Track: ${row.Track}, Position: ${row.Position}${statusNote}`,
       );
     });
 
@@ -469,19 +469,19 @@ async function calculateAllMetrics(year, teamMap) {
         position = parseInt(driverStanding.position, 10) || null; // Convert position safely
 
         console.log(
-          `📊 ${driverRow.FirstName} ${driverRow.LastName} (${year}) -> Position: ${position}, Points: ${points}`
+          `📊 ${driverRow.FirstName} ${driverRow.LastName} (${year}) -> Position: ${position}, Points: ${points}`,
         );
       }
     } catch (error) {
       console.error(
-        `❌ Failed to fetch standings for ${driverRow.FirstName} ${driverRow.LastName} (${year}): ${error.message}`
+        `❌ Failed to fetch standings for ${driverRow.FirstName} ${driverRow.LastName} (${year}): ${error.message}`,
       );
     }
     if (teammateId) {
       for (const row of positionsQueryResult) {
         const [teammateRow] = await db.query(
           `SELECT Position FROM Results WHERE RaceID = ? AND DriverID = ?`,
-          [row.RaceID, teammateId]
+          [row.RaceID, teammateId],
         );
         if (teammateRow.length > 0) {
           const teammatePos = teammateRow[0].Position;
@@ -506,7 +506,7 @@ async function calculateAllMetrics(year, teamMap) {
       const Pr = calculatePr(dWin, tWin);
       const Pagg = calculatePagg(Pr, Pc, Pt, Pa);
       console.log(
-        `For Driver ${driverName} (${driverId}) in Season ${seasonID}: Pc=${Pc}, Pt=${Pt}, Pa=${Pa}, Pr=${Pr}`
+        `For Driver ${driverName} (${driverId}) in Season ${seasonID}: Pc=${Pc}, Pt=${Pt}, Pa=${Pa}, Pr=${Pr}`,
       );
       console.log(`Pagg: ${Pagg}`);
 
@@ -537,7 +537,7 @@ async function calculateAllMetrics(year, teamMap) {
       ]);
     } catch (error) {
       console.error(
-        `Error calculating P values for Driver ${driverName} (${driverId}): ${error.message}`
+        `Error calculating P values for Driver ${driverName} (${driverId}): ${error.message}`,
       );
     }
   }
@@ -595,7 +595,7 @@ app.get("/api/drivers/:season", async (req, res) => {
       WHERE s.Year = ?
       ORDER BY d.RacingNumber ASC
     `,
-      [seasonYear]
+      [seasonYear],
     );
 
     res.json(rows);
@@ -620,7 +620,7 @@ app.get("/api/drivers/:season/:driverIds", async (req, res) => {
     JOIN Seasons s ON s.SeasonID = pm.SeasonID
     WHERE s.Year = ? AND d.DriverID IN (${placeholders})
   `,
-      [seasonYear, ...driverIds]
+      [seasonYear, ...driverIds],
     );
 
     const raceResults = {};
@@ -636,7 +636,7 @@ app.get("/api/drivers/:season/:driverIds", async (req, res) => {
       WHERE s.Year = ? AND res.DriverID = ?
       ORDER BY r.RoundNo ASC
     `,
-        [seasonYear, id]
+        [seasonYear, id],
       );
 
       raceResults[`driver${id}`] = results;
@@ -675,9 +675,13 @@ function calculatePc(sumpos, sumpos2, n) {
   const mean = sumpos / n;
   const std = Math.sqrt(sumpos2 / n - mean ** 2);
 
-  // Calculate Pc
-  const Pc = 1 - Math.min(1, ((std / 4) ** 2 + 0.3));
-  return Number(Math.max(0, Math.min(1, Pc))).toPrecision(2);
+  console.log(
+    `DEBUG: sumpos=${sumpos}, sumpos2=${sumpos2}, n=${n}, std=${std}, mean=${mean}`,
+  );
+
+  const k = 6.15;
+  const Pc = 1 - (std / k) ** 2;
+  return Number(Math.max(0, Math.min(1, Pc)).toFixed(2));
 }
 
 function calculatePaZ(points, mean, std) {
@@ -718,7 +722,7 @@ function calculatePt(positions) {
 
   console.log(`DEBUG: Q1=${avgQ1}, Q2=${avgQ2}, Q3=${avgQ3}, Q4=${avgQ4}`);
   console.log(
-    `DEBUG: LongTermTrend=${longTermTrend}, MidTermTrend=${midTermTrend}, Final Pt=${Pt}`
+    `DEBUG: LongTermTrend=${longTermTrend}, MidTermTrend=${midTermTrend}, Final Pt=${Pt}`,
   );
 
   return 1.5 * Number(Math.max(0, Math.min(1, Pt)).toPrecision(2));
@@ -727,7 +731,7 @@ function calculatePt(positions) {
 function calculatePr(dWin, tWin) {
   console.log(`DEBUG: dWin=${dWin}, tWin=${tWin}`);
   if (dWin + tWin === 0) return 0;
-  return Math.min(1, 1.2 * Number((dWin / (dWin + tWin)).toPrecision(2)));
+  return Math.min(1, Number((dWin / (dWin + tWin)).toPrecision(2)));
 }
 
 // Pagg is the aggregate performance metric
