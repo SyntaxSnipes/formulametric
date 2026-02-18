@@ -1,4 +1,5 @@
 import './styles/index.css'
+
 const Home = () => {
     return (
         <div className="flex flex-col justify-center items-center w-full bg-[#141418] text-[#ff1e00]">
