@@ -1,13 +1,13 @@
 // these are some of the imports we need, dotenv is for loading the env file, axios is for making request to the api, cron is for scheduling update of db
 import dotenv from "dotenv";
+import process from "process";
 dotenv.config();
 import express from "express";
 import mysql from "mysql2/promise";
 import axios from "axios";
 import cors from "cors";
-import { abs, sqrt, floor, e, re, count } from "mathjs";
 
-// Initialize Express
+//Initialize expres, and setting up CORS for front-end and back-end to work better.
 const app = express();
 app.use(cors());
 const PORT = 5000;
@@ -15,6 +15,22 @@ const PORT = 5000;
 // Sleep function created to prevent exceeding API burst limit
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function eBackoffRetry(func, is429, cRetry, mRetry) {
+  let sleepAmt = 100;
+  sleepAmt = 2 ** cRetry * 100;
+  if (is429 && cRetry < mRetry) {
+    await sleep(sleepAmt);
+    try {
+      return await func();
+    } catch (e) {
+      const still429 = e.response?.status === 429;
+      console.log(`Tried, sleep ${sleepAmt}ms, retry ${cRetry} (still429=${still429})`);
+      return await eBackoffRetry(func, still429, cRetry + 1, mRetry);
+    }
+  }
+  return undefined
 }
 
 // Declare database globally
@@ -81,13 +97,27 @@ async function isSeasonDataComplete(year) {
 
 //Here are the functions to update the database, decomposing the problem into smaller parts
 async function insertAllDrivers(year) {
-  await sleep(1000);
-  const driverResponse = await axios.get(
-    `https://api.jolpi.ca/ergast/f1/${year}/drivers.json`,
-  );
+  let driverResponse;
+  try {
+    driverResponse = await axios.get(
+      `https://api.jolpi.ca/ergast/f1/${year}/drivers.json`,
+    );
+  } catch (error) {
+    driverResponse = await eBackoffRetry(
+      async () => {
+        return await axios.get(
+          `https://api.jolpi.ca/ergast/f1/${year}/drivers.json`,
+        );
+      },
+      error.response?.status === 429,
+      0,
+      5,
+    );
+  }
   const drivers = driverResponse.data.MRData.DriverTable.Drivers || [];
   for (const driver of drivers) {
-    const driverSQLQuery = `
+    try {
+      const driverSQLQuery = `
       INSERT INTO Drivers (API_DriverID, RacingNumber, FirstName, LastName, Country)
       VALUES (?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE 
@@ -96,13 +126,19 @@ async function insertAllDrivers(year) {
         LastName = VALUES(LastName), 
         Country = VALUES(Country);
     `;
-    await db.query(driverSQLQuery, [
-      driver.driverId,
-      driver.permanentNumber || null,
-      driver.givenName,
-      driver.familyName,
-      driver.nationality,
-    ]);
+      await db.query(driverSQLQuery, [
+        driver.driverId,
+        driver.permanentNumber || null,
+        driver.givenName,
+        driver.familyName,
+        driver.nationality,
+      ]);
+    } catch (error) {
+      console.error(
+        `Database insertion error for driver ${driver.driverId}:`,
+        error.message,
+      );
+    }
   }
   console.log(`Drivers updated for season ${year}`);
   const driverMap = {};
@@ -113,10 +149,25 @@ async function insertAllDrivers(year) {
   for (const d of allDrivers) {
     driverMap[d.API_DriverID] = d.DriverID;
   }
+
   // After inserting drivers from /drivers.json
-  const standingsRes = await axios.get(
-    `https://api.jolpi.ca/ergast/f1/${year}/driverStandings.json`,
-  );
+  let standingsRes;
+  try {
+    standingsRes = await axios.get(
+      `https://api.jolpi.ca/ergast/f1/${year}/driverStandings.json`,
+    );
+  } catch (error) { standingsRes = await
+    eBackoffRetry(
+      async () => {
+        return await axios.get(
+          `https://api.jolpi.ca/ergast/f1/${year}/driverStandings.json`,
+        );
+      },
+      error.response?.status === 429,
+      0,
+      5,
+    );
+  }
   const standingsList =
     standingsRes.data?.MRData?.StandingsTable?.StandingsLists?.[0]
       ?.DriverStandings || [];
@@ -146,14 +197,25 @@ async function insertAllDrivers(year) {
 
 async function assignTeams(year, driverMap) {
   const teamDrivers = {};
-  await sleep(1000);
   for (const [apiId, driverId] of Object.entries(driverMap)) {
     try {
-      const teamResponse = await axios.get(
-        `https://api.jolpi.ca/ergast/f1/${year}/drivers/${apiId}/constructors.json`,
-      );
-      const teamData =
-        teamResponse.data.MRData.ConstructorTable.Constructors || [];
+      let teamResponse;
+      try {
+        teamResponse = await axios.get(
+          `https://api.jolpi.ca/ergast/f1/${year}/drivers/${apiId}/constructors.json`,
+        );
+      } catch (error) { teamResponse = await
+        eBackoffRetry(
+          async () => {
+            return await axios.get(
+              `https://api.jolpi.ca/ergast/f1/${year}/drivers/${apiId}/constructors.json`,
+            );
+          },
+          error.response?.status === 429,
+          0,
+          5,
+        );
+      }
       let teamName =
         teamResponse?.data?.MRData?.ConstructorTable?.Constructors?.[0]?.name;
 
@@ -246,10 +308,24 @@ async function assignTeams(year, driverMap) {
 }
 
 async function processRacesAndResults(year, driverMap) {
-  await sleep(1000);
-  const raceResponse = await axios.get(
-    `https://api.jolpi.ca/ergast/f1/${year}/races.json`,
-  );
+  let raceResponse;
+  try {
+    raceResponse = await axios.get(
+      `https://api.jolpi.ca/ergast/f1/${year}/races.json`,
+    );
+  } catch (error) {  raceResponse = await
+    eBackoffRetry(
+      async () => {
+        return await axios.get(
+          `https://api.jolpi.ca/ergast/f1/${year}/races.json`,
+        );
+      },
+      error.response?.status === 429,
+      0,
+      5,
+    );
+  }
+
   const races = raceResponse.data.MRData.RaceTable?.Races || [];
   if (races.length === 0) {
     console.error(`No races found for year ${year}`);
@@ -295,9 +371,23 @@ async function processRacesAndResults(year, driverMap) {
     await db.query(linkQuery, [seasonID, raceID]);
 
     try {
-      const resultResponse = await axios.get(`
-        https://api.jolpi.ca/ergast/f1/${year}/${round}/results.json
-      `);
+      let resultResponse;
+      try {
+        resultResponse = await axios.get(
+          `https://api.jolpi.ca/ergast/f1/${year}/${round}/results.json`,
+        );
+      } catch (error) {
+        resultResponse = await eBackoffRetry(
+          async () => {
+            return await axios.get(
+              `https://api.jolpi.ca/ergast/f1/${year}/${round}/results.json`,
+            );
+          },
+          error.response?.status === 429,
+          0,
+          5,
+        );
+      }
       const raceData = resultResponse?.data?.MRData?.RaceTable?.Races?.[0];
       const results = raceData?.Results || [];
       if (!raceData || !raceData.Results) {
@@ -359,9 +449,24 @@ async function processRacesAndResults(year, driverMap) {
 async function calculateAllMetrics(year, teamMap) {
   const pointsList = [];
   const driverPointsMap = {};
-
-  const standingsUrl = `https://api.jolpi.ca/ergast/f1/${year}/driverStandings.json`;
-  const { data } = await axios.get(standingsUrl);
+  let standingsUrl;
+  try {
+    standingsUrl = await axios.get(
+      `https://api.jolpi.ca/ergast/f1/${year}/driverStandings.json`,
+    );
+  } catch (error) { standingsUrl = await
+    eBackoffRetry(
+      async () => {
+        return await axios.get(
+          `https://api.jolpi.ca/ergast/f1/${year}/driverStandings.json`,
+        );
+      },
+      error.response?.status === 429,
+      0,
+      5,
+    );
+  }
+  const data = standingsUrl.data;
   const standings =
     data?.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings || [];
 
@@ -459,9 +564,24 @@ async function calculateAllMetrics(year, teamMap) {
     let points = 0;
     let position = null;
     try {
-      await sleep(750);
-      const standingsUrl = `https://api.jolpi.ca/ergast/f1/${year}/drivers/${driverRow.API_DriverID}/driverStandings.json`;
-      const { data } = await axios.get(standingsUrl);
+      let standingsUrl;
+      try {
+        standingsUrl = await axios.get(
+          `https://api.jolpi.ca/ergast/f1/${year}/drivers/${driverRow.API_DriverID}/driverStandings.json`,
+        );
+      } catch (error) { standingsUrl = await
+        eBackoffRetry(
+          async () => {
+            return await axios.get(
+              `https://api.jolpi.ca/ergast/f1/${year}/drivers/${driverRow.API_DriverID}/driverStandings.json`,
+            );
+          },
+          error.response?.status === 429,
+          0,
+          5,
+        );
+      }
+      const data = standingsUrl.data;
       const standingsLists = data?.MRData?.StandingsTable?.StandingsLists || [];
       const driverStanding = standingsLists[0]?.DriverStandings?.[0] || [];
       if (driverStanding) {
@@ -499,7 +619,6 @@ async function calculateAllMetrics(year, teamMap) {
       const Pt = calculatePt(validPositions);
       const driverStats = driverPointsMap[driverRow.API_DriverID];
       const points = driverStats?.pts ?? 0;
-      const position = driverStats?.pos ?? null;
 
       const Pa = calculatePaZ(points, mean, std);
 

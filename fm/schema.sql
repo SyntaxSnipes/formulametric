@@ -1,3 +1,4 @@
+-- Active: 1739899317054@@127.0.0.1@3306
 -- MySQL dump 10.13  Distrib 8.0.43, for Linux (x86_64)
 --
 -- Host: localhost    Database: FormulaMetric
@@ -24,7 +25,7 @@ DROP TABLE IF EXISTS `Drivers`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Drivers` (
   `DriverID` int NOT NULL AUTO_INCREMENT COMMENT 'Unique driver ID',
-  `RacingNumber` int NOT NULL,
+  `RacingNumber` int,
   `FirstName` varchar(100) DEFAULT NULL,
   `LastName` varchar(100) DEFAULT NULL,
   `Country` varchar(100) DEFAULT NULL,
