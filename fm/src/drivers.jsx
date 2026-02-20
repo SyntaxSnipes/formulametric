@@ -286,7 +286,7 @@ function DriverScore({ year, selectedDrivers }) {
           console.error("Error fetching driver details:", err);
         });
     }
-    if (driverB?.DriverID) {
+    if (driverC?.DriverID) {
       fetch(`http://localhost:5000/api/drivers/${year}/${driverC?.DriverID}`)
         .then((res) => res.json())
         .then((data) => {
