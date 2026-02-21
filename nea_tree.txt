@@ -1,12 +1,9 @@
 .
 ├── README.md
 └── fm
-    ├── .env
-    ├── eslint.config.js
     ├── index.html
     ├── modela.mwb.bak
     ├── package.json
-    ├── postcss.config.js
     ├── public
     ├── server
     │   ├── db
@@ -33,24 +30,34 @@
     │   └── utils
     │       ├── retry.js
     │       └── sleep.js
-    ├── src
-    │   ├── App.jsx
-    │   ├── assets
-    │   │   └── icons
-    │   │       ├── driverImages.js
-    │   │       ├── flags
-    │   │       ├── flags.js
-    │   │       └── photos
-    │   │           ├── 2022
-    │   │           ├── 2023
-    │   │           ├── 2024
-    │   │           └── 2025
-    │   ├── drivers.jsx
-    │   ├── home.jsx
-    │   ├── main.jsx
-    │   └── styles
-    │       └── index.css
-    ├── tailwind.config.js
-    └── vite.config.js
+    └── src
+        ├── App.jsx
+        ├── assets
+        │   └── icons
+        │       ├── driverImages.js
+        │       ├── flags
+        │       ├── flags.js
+        │       └── photos
+        │           ├── 2022
+        │           ├── 2023
+        │           ├── 2024
+        │           └── 2025
+        ├── components
+        │   ├── DriverCard.jsx
+        │   ├── DriverScore.jsx
+        │   ├── Gauge
+        │   │   ├── GaugePointer.jsx
+        │   │   └── MetricGuage.jsx
+        │   ├── SelectedDriversList.jsx
+        │   └── navbar.jsx
+        ├── drivers.jsx
+        ├── home.jsx
+        ├── main.jsx
+        ├── styles
+        │   └── index.css
+        └── utils
+            ├── decideDriverFlag.jsx
+            ├── decideDriverIcon.jsx
+            └── normalizeName.jsx
 
-19 directories, 34 files
+22 directories, 38 files
