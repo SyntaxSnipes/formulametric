@@ -1,0 +1,56 @@
+.
+├── README.md
+└── fm
+    ├── .env
+    ├── eslint.config.js
+    ├── index.html
+    ├── modela.mwb.bak
+    ├── package.json
+    ├── postcss.config.js
+    ├── public
+    ├── server
+    │   ├── db
+    │   │   └── connection.js
+    │   ├── index.js
+    │   ├── metrics
+    │   │   ├── index.js
+    │   │   ├── pa.js
+    │   │   ├── pagg.js
+    │   │   ├── pc.js
+    │   │   ├── pr.js
+    │   │   └── pt.js
+    │   ├── routes
+    │   │   └── drivers.routes.js
+    │   ├── services
+    │   │   └── jolpica.service.js
+    │   ├── sync
+    │   │   ├── assignTeams.js
+    │   │   ├── calculateMetrics.js
+    │   │   ├── insertDrivers.js
+    │   │   ├── processRacesAndResults.js
+    │   │   ├── seasonCompleteness.js
+    │   │   └── updateDB.js
+    │   └── utils
+    │       ├── retry.js
+    │       └── sleep.js
+    ├── src
+    │   ├── App.jsx
+    │   ├── assets
+    │   │   └── icons
+    │   │       ├── driverImages.js
+    │   │       ├── flags
+    │   │       ├── flags.js
+    │   │       └── photos
+    │   │           ├── 2022
+    │   │           ├── 2023
+    │   │           ├── 2024
+    │   │           └── 2025
+    │   ├── drivers.jsx
+    │   ├── home.jsx
+    │   ├── main.jsx
+    │   └── styles
+    │       └── index.css
+    ├── tailwind.config.js
+    └── vite.config.js
+
+19 directories, 34 files
