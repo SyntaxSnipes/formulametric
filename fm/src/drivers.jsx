@@ -24,6 +24,10 @@ function Drivers() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSelectedDrivers([]);
+  }, [year]);
+
+  useEffect(() => {
     setLoading(true); // Set loading to true whenever the year changes or the page is refreshed
     fetch(`http://localhost:5000/api/drivers/${year}`)
       .then((res) => res.json())
@@ -67,7 +71,8 @@ function Drivers() {
     return name
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
+      .toLowerCase()
+      .replace(/[\s-]+/g, "");
   }
 
   function decideDriverIcon(driver, year) {
@@ -194,7 +199,7 @@ function DriverCard({
       onClick={() => {
         if (selectedDrivers.find((d) => d.DriverID === driver.DriverID)) {
           setSelectedDrivers(
-            selectedDrivers.filter((d) => d.DriverID !== driver.DriverID)
+            selectedDrivers.filter((d) => d.DriverID !== driver.DriverID),
           );
         } else if (selectedDrivers.length < 3) {
           setSelectedDrivers([...selectedDrivers, driver]);
@@ -253,7 +258,12 @@ function DriverScore({ year, selectedDrivers }) {
   const [resultsB, setResultsB] = useState([]);
   const [resultsC, setResultsC] = useState([]);
   const [driverA, driverB, driverC] = selectedDrivers;
-
+  useEffect(() => {
+    setDetailedDriver(null);
+    setResultsA([]);
+    setResultsB([]);
+    setResultsC([]);
+  }, [selectedDrivers, year]);
   useEffect(() => {
     if (!driverA || !driverA.DriverID) return;
     fetch(`http://localhost:5000/api/drivers/${year}/${driverA.DriverID}`)

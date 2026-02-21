@@ -140,7 +140,7 @@ const driverImages = {
   latifi: { 2022: latifi22 },
   stroll: { 2022: stroll22, 2023: stroll23, 2024: stroll24, 2025: stroll25 },
   vettel: { 2022: vettel22 },
-  deVries: { 2022: deVries22, 2023: deVries23 },
+  devries: { 2022: deVries22, 2023: deVries23 },
   hulkenberg: { 2022: hulkenberg22, 2023: hulkenberg23, 2024: hulkenberg24, 2025: hulkenberg25 },
   piastri: { 2023: piastri23, 2024: piastri24, 2025: piastri25 },
   sargeant: { 2023: sargeant23, 2024: sargeant24 },
