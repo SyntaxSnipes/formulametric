@@ -71,7 +71,7 @@ function Rankings() {
                   setDrivers(quickSort(drivers, selectedSortFactor, sortOrder));
                 }}
               >
-                {sortOrder === "desc" ? "Worst to Best" : "Best to Worst"}
+                {sortOrder === "desc" ? "Best to Worst" : "Worst to Best"}
               </button>
             </span>
             <span className="flex flex-row gap-3 my-auto">
@@ -125,10 +125,12 @@ function Rankings() {
               {drivers.map((driver) => (
                 <DriverRanking
                   key={driver.DriverID}
+                  index = {drivers.indexOf(driver) + 1}
                   driver={driver}
                   decideDriverIcon={decideDriverIcon}
                   decideDriverFlag={decideDriverFlag}
                   year={year}
+                  selectedSortFactor={selectedSortFactor}
                 />
               ))}
             </section>

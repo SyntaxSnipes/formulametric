@@ -1,12 +1,16 @@
 export default function DriverRanking({
   driver,
+  index,
   decideDriverIcon,
   decideDriverFlag,
+  selectedSortFactor,
   year,
 }) {
   return (
+    
     <div className="w-full m-2 h-min bg-[#1e1e1e] rounded-xl text-white flex flex-col justify-between border border-[#e8e8e8] shadow-lg hover:bg-slate-900 shadow-[#ff1e0009]">
       <div className="flex flex-row justify-between items-center h-fit w-auto">
+        <span className="text-center text-white/60">{index}</span>
         {decideDriverIcon(driver, year)}
         <div className="flex flex-row text-end pl-3 pr-3 w-full justify-between">
           <div>
@@ -20,11 +24,36 @@ export default function DriverRanking({
             <p className="text-sm text-white/60 text-left">{driver.TeamName}</p>
           </div>
           <div className="text-[#ff1e00] font-bold text-xl h-min flex flex-row align-center my-auto justify-between gap-5">
-            <span className="h-min">Pc: {driver.PConsistency.toPrecision(2)}</span>
-            <span className="h-min">Pt: {driver.PTrajectory.toPrecision(2)}</span>
-            <span className="h-min">Pa: {driver.PAbsolute.toPrecision(2)}</span>
-            <span className="h-min">Pr: {driver.PRelative.toPrecision(2)}</span>
-            <span className="h-min">Pagg: {driver.PAggregate.toPrecision(2)}</span>
+            <span
+              className="h-min"
+              style={selectedSortFactor === "Pc" ? { color: "#fff" } : {}}
+            >
+              Pc: {driver.PConsistency.toPrecision(2)}
+            </span>
+            <span
+              className="h-min"
+              style={selectedSortFactor === "Pt" ? { color: "#fff" } : {}}
+            >
+              Pt: {driver.PTrajectory.toPrecision(2)}
+            </span>
+            <span
+              className="h-min"
+              style={selectedSortFactor === "Pa" ? { color: "#fff" } : {}}
+            >
+              Pa: {driver.PAbsolute.toPrecision(2)}
+            </span>
+            <span
+              className="h-min"
+              style={selectedSortFactor === "Pr" ? { color: "#fff" } : {}}
+            >
+              Pr: {driver.PRelative.toPrecision(2)}
+            </span>
+            <span
+              className="h-min"
+              style={selectedSortFactor === "Pagg" ? { color: "#fff" } : {}}
+            >
+              Pagg: {driver.PAggregate.toPrecision(2)}
+            </span>
           </div>
         </div>
       </div>
