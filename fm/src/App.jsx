@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import { Link, useMatch, useResolvedPath } from "react-router-dom"
 import Home from './home'
 import Drivers from './drivers'
+import Rankings from './rankings'
 import PropTypes from 'prop-types';
 import NavBar from './components/navbar'
 
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/drivers" element={<Drivers />} />
+          <Route path='/rankings' element={<Rankings />} />
         </Routes>
       </div>
     </div>

@@ -4,20 +4,17 @@ import BeatLoader from "react-spinners/BeatLoader";
 
 import decideDriverFlag from "./utils/decideDriverFlag";
 import decideDriverIcon from "./utils/decideDriverIcon";
-
-import SelectedDriversList from "./components/SelectedDriversList";
-import DriverScore from "./components/DriverScore";
-import DriverCard from "./components/DriverCard";
+import normalizeName from "./utils/normalizeName";
 
 
-function Drivers() {
+import DriverRanking from "./components/DriverRanking";
+
+
+function Rankings() {
   const [drivers, setDrivers] = useState([]);
   const [year, setYear] = useState("2022");
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setSelectedDrivers([]);
-  }, [year]);
+  const [selectedSortFactor, setSelectedSortFactor] = useState("Pagg")
 
   useEffect(() => {
     setLoading(true); // Set loading to true whenever the year changes or the page is refreshed
@@ -25,15 +22,13 @@ function Drivers() {
       .then((res) => res.json())
       .then((data) => {
         setDrivers(data);
-        setLoading(false); // Set loading to false after data is fetched
+        setLoading(false);
       })
       .catch((err) => {
         console.error("Error fetching drivers:", err);
         setLoading(false); // Set loading to false even if there's an error
       });
   }, [year]);
-
-  const [selectedDrivers, setSelectedDrivers] = useState([]);
 
   return (
     <>
@@ -65,30 +60,25 @@ function Drivers() {
             2025
           </button>
         </section>
-        <h2 className="text-4xl pt-10">Select your driver</h2>
+        <div className="flex flex-row w-full justify-between">
+        <h2 className="text-4xl pt-10">{year}'s Drivers Ranking</h2>
+        <span>
+
+        </span>
+        </div>
         {!loading ? (
-          <section className="flex flex-col flex-wrap gap-4 pt-6 items-center justify-center">
+          <section className="flex flex-col flex-wrap gap-4 items-center justify-center">
             <section className="flex flex-wrap gap-4 pt-6 items-center justify-center">
               {drivers.map((driver) => (
-                <DriverCard
+                <DriverRanking
                   key={driver.DriverID}
                   driver={driver}
                   decideDriverIcon={decideDriverIcon}
                   decideDriverFlag={decideDriverFlag}
-                  selectedDrivers={selectedDrivers}
-                  setSelectedDrivers={setSelectedDrivers}
                   year={year}
                 />
               ))}
             </section>
-            <SelectedDriversList
-              selectedDrivers={selectedDrivers}
-              setSelectedDrivers={setSelectedDrivers}
-              decideDriverFlag={decideDriverFlag}
-              decideDriverIcon={decideDriverIcon}
-              year={year}
-            />
-            <DriverScore year={year} selectedDrivers={selectedDrivers} />
           </section>
         ) : (
           <div className="fixed inset-0 flex justify-center items-center flex-col p-1 bg-[#15151e]">
@@ -123,4 +113,4 @@ function Drivers() {
   );
 }
 
-export default Drivers;
+export default Rankings;

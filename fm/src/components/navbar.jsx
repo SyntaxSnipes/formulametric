@@ -1,6 +1,6 @@
-import PropTypes from 'prop-types';
-import fmlogo from '/fmicon.png'
-import { Link, useMatch, useResolvedPath } from "react-router-dom"
+import PropTypes from "prop-types";
+import fmlogo from "/fmicon.png";
+import { Link, useMatch, useResolvedPath } from "react-router-dom";
 
 export default function NavBar() {
   return (
@@ -20,6 +20,12 @@ export default function NavBar() {
           >
             Drivers
           </CustomLink>
+          <CustomLink
+            className="[all:unset] cursor-pointer text-[1.5rem]"
+            to="/rankings"
+          >
+            Rankings
+          </CustomLink>
         </span>
       </div>
     </nav>
@@ -27,8 +33,8 @@ export default function NavBar() {
 }
 
 function CustomLink({ to, children, ...props }) {
-  const resolvedPath = useResolvedPath(to)
-  const isActive = useMatch({ path: resolvedPath.pathname, end: true })
+  const resolvedPath = useResolvedPath(to);
+  const isActive = useMatch({ path: resolvedPath.pathname, end: true });
 
   return (
     <li className={isActive ? "active" : ""}>
@@ -36,10 +42,10 @@ function CustomLink({ to, children, ...props }) {
         {children}
       </Link>
     </li>
-  )
+  );
 }
 
 CustomLink.propTypes = {
   to: PropTypes.string.isRequired,
-  children: PropTypes.node.isRequired 
+  children: PropTypes.node.isRequired,
 };

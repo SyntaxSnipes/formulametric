@@ -12,5 +12,5 @@ export function calculatePc(sumpos, sumpos2, n) {
 
   const k = 6.15;
   const Pc = 1 - (std / k) ** 2;
-  return Number(Math.max(0, Math.min(1, Pc)).toFixed(2));
+  return Number(Math.max(0, Math.min(1, Pc)).toPrecision(2));
 }

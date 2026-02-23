@@ -4,7 +4,7 @@ const Home = () => {
     return (
         <div className="flex flex-col justify-center items-center w-full bg-[#141418] text-[#ff1e00]">
             <header className="text-center mx-[0] my-4">
-                <h1 className='text-[6em] leading-[1.1] '>Welcome to Formula Metric</h1>
+                <h1 className='text-[6em] leading-[1.1] '>Rankings</h1>
                 <p className='text-[1.2rem] max-w-[800px] mx-[auto] my-[0]'>Your one-stop app for accessing data about race drivers and teams across various years using statistics.</p>
             </header>
             <section className="text-center mx-[0] my-4">
