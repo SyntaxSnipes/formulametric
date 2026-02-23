@@ -1,0 +1,64 @@
+.
+├── index.html
+├── modela.mwb.bak
+├── package.json
+├── public
+├── server
+│   ├── db
+│   │   └── connection.js
+│   ├── index.js
+│   ├── metrics
+│   │   ├── index.js
+│   │   ├── pa.js
+│   │   ├── pagg.js
+│   │   ├── pc.js
+│   │   ├── pr.js
+│   │   └── pt.js
+│   ├── routes
+│   │   └── drivers.routes.js
+│   ├── services
+│   │   └── jolpica.service.js
+│   ├── sync
+│   │   ├── assignTeams.js
+│   │   ├── calculateMetrics.js
+│   │   ├── insertDrivers.js
+│   │   ├── processRacesAndResults.js
+│   │   ├── seasonCompleteness.js
+│   │   └── updateDB.js
+│   └── utils
+│       ├── retry.js
+│       └── sleep.js
+└── src
+    ├── App.jsx
+    ├── assets
+    │   └── icons
+    │       ├── driverImages.js
+    │       ├── flags
+    │       ├── flags.js
+    │       └── photos
+    │           ├── 2022
+    │           ├── 2023
+    │           ├── 2024
+    │           └── 2025
+    ├── components
+    │   ├── DriverCard.jsx
+    │   ├── DriverRanking.jsx
+    │   ├── DriverScore.jsx
+    │   ├── Gauge
+    │   │   ├── GaugePointer.jsx
+    │   │   └── MetricGuage.jsx
+    │   ├── SelectedDriversList.jsx
+    │   └── navbar.jsx
+    ├── drivers.jsx
+    ├── home.jsx
+    ├── main.jsx
+    ├── rankings.jsx
+    ├── styles
+    │   └── index.css
+    └── utils
+        ├── decideDriverFlag.jsx
+        ├── decideDriverIcon.jsx
+        ├── normalizeName.jsx
+        └── quickSort.jsx
+
+21 directories, 40 files

@@ -12,7 +12,7 @@ import DriverCard from "./components/DriverCard";
 
 function Drivers() {
   const [drivers, setDrivers] = useState([]);
-  const [year, setYear] = useState("2022");
+  const [year, setYear] = useState("2024");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

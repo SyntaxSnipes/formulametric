@@ -1,29 +1,28 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { LineChart } from "@mui/x-charts/LineChart";
 import MetricGauge from "../components/Gauge/MetricGuage";
 
-
 export default function DriverScore({ year, selectedDrivers }) {
-  const [detailedDriver, setDetailedDriver] = useState(null);
   const [resultsA, setResultsA] = useState([]);
   const [resultsB, setResultsB] = useState([]);
   const [resultsC, setResultsC] = useState([]);
+  const [totalRaces, setTotalRaces] = useState(0);
   const [driverA, driverB, driverC] = selectedDrivers;
   useEffect(() => {
-    setDetailedDriver(null);
     setResultsA([]);
     setResultsB([]);
     setResultsC([]);
   }, [selectedDrivers, year]);
+
   useEffect(() => {
     if (!driverA || !driverA.DriverID) return;
     fetch(`http://localhost:5000/api/drivers/${year}/${driverA.DriverID}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("📦 API response for driver details:", data);
+        console.log("API response for driver details:", data);
         if (data && Array.isArray(data.drivers) && data.drivers.length > 0) {
-          setDetailedDriver(data?.drivers[0]);
           setResultsA(data.races[`driver${driverA.DriverID}`] || []);
+          setTotalRaces(data.races[`driver${driverA.DriverID}`][0].NoRounds);
         } else {
           console.error("Driver data is missing from API response");
         }
@@ -35,10 +34,11 @@ export default function DriverScore({ year, selectedDrivers }) {
       fetch(`http://localhost:5000/api/drivers/${year}/${driverB?.DriverID}`)
         .then((res) => res.json())
         .then((data) => {
-          console.log("📦 API response for driver details:", data);
+          console.log("API response for driver details:", data);
           if (data && Array.isArray(data.drivers) && data.drivers.length > 0) {
-            setDetailedDriver(data?.drivers[0]);
+
             setResultsB(data.races[`driver${driverB?.DriverID}`] || []);
+            setTotalRaces(data.races[`driver${driverB?.DriverID}`][0].NoRounds);
           } else {
             console.error("Driver data is missing from API response");
           }
@@ -51,10 +51,11 @@ export default function DriverScore({ year, selectedDrivers }) {
       fetch(`http://localhost:5000/api/drivers/${year}/${driverC?.DriverID}`)
         .then((res) => res.json())
         .then((data) => {
-          console.log("📦 API response for driver details:", data);
+          console.log("API response for driver details:", data);
           if (data && Array.isArray(data.drivers) && data.drivers.length > 0) {
-            setDetailedDriver(data?.drivers[0]);
+
             setResultsC(data.races[`driver${driverC?.DriverID}`] || []);
+            setTotalRaces(data.races[`driver${driverC?.DriverID}`][0].NoRounds);
           } else {
             console.error("Driver data is missing from API response");
           }
@@ -65,7 +66,7 @@ export default function DriverScore({ year, selectedDrivers }) {
     }
   }, [selectedDrivers, year]);
 
-  if (!detailedDriver) {
+  if (!selectedDrivers || selectedDrivers.length === 0) {
     return;
   }
 
@@ -106,8 +107,8 @@ export default function DriverScore({ year, selectedDrivers }) {
             ]}
             xAxis={[
               {
-                data: resultsA.map((race) => race.RoundNo),
-                tickNumber: resultsA.length,
+                data: Array.from({ length: Math.max(resultsA?.length, resultsB?.length, resultsC?.length) }, (_, i) => i + 1),
+                tickNumber: Math.max(resultsA?.length, resultsB?.length, resultsC?.length),
                 label: "Races",
                 labelStyle: {
                   fill: "#ff1e00", // Make axis title visible in red
@@ -116,7 +117,7 @@ export default function DriverScore({ year, selectedDrivers }) {
                   fontSize: 14,
                 },
                 tickLabelStyle: {
-                  fill: "#ffffff", // Make tick numbers visible
+                  fill: "#ffffff",
                   fontFamily: "Titillium Web, sans-serif",
                   fontSize: 12,
                 },
@@ -129,7 +130,7 @@ export default function DriverScore({ year, selectedDrivers }) {
                 min: 1,
                 label: "Race Position",
                 labelStyle: {
-                  fill: "#ff1e00", // Same here
+                  fill: "#ff1e00",
                   fontWeight: "bold",
                   fontFamily: "Titillium Web, sans-serif",
                   fontSize: 14,
