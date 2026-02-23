@@ -4,17 +4,16 @@ import BeatLoader from "react-spinners/BeatLoader";
 
 import decideDriverFlag from "./utils/decideDriverFlag";
 import decideDriverIcon from "./utils/decideDriverIcon";
-import normalizeName from "./utils/normalizeName";
-
 
 import DriverRanking from "./components/DriverRanking";
-
+import quickSort from "./utils/quickSort";
 
 function Rankings() {
   const [drivers, setDrivers] = useState([]);
   const [year, setYear] = useState("2022");
   const [loading, setLoading] = useState(true);
-  const [selectedSortFactor, setSelectedSortFactor] = useState("Pagg")
+  const [selectedSortFactor, setSelectedSortFactor] = useState("Pagg");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   useEffect(() => {
     setLoading(true); // Set loading to true whenever the year changes or the page is refreshed
@@ -23,6 +22,7 @@ function Rankings() {
       .then((data) => {
         setDrivers(data);
         setLoading(false);
+        console.log(data);
       })
       .catch((err) => {
         console.error("Error fetching drivers:", err);
@@ -61,10 +61,63 @@ function Rankings() {
           </button>
         </section>
         <div className="flex flex-row w-full justify-between">
-        <h2 className="text-4xl pt-10">{year}'s Drivers Ranking</h2>
-        <span>
-
-        </span>
+          <h2 className="text-4xl pt-10">{year}&apos;s Drivers Rankings</h2>
+          <div className="flex flex-row gap-4 mr-2 mx-auto py-auto">
+            <span className="flex flex-row gap-2 my-auto">
+              In Order:
+              <button
+                onClick={() => {
+                  setSortOrder(sortOrder === "desc" ? "asc" : "desc");
+                  setDrivers(quickSort(drivers, selectedSortFactor, sortOrder));
+                }}
+              >
+                {sortOrder === "desc" ? "Worst to Best" : "Best to Worst"}
+              </button>
+            </span>
+            <span className="flex flex-row gap-3 my-auto">
+              Sort by:
+              <button
+                onClick={() => {
+                  setSelectedSortFactor("Pc");
+                  setDrivers(quickSort(drivers, selectedSortFactor, sortOrder));
+                }}
+              >
+                Pc
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedSortFactor("Pt");
+                  setDrivers(quickSort(drivers, selectedSortFactor, sortOrder));
+                }}
+              >
+                Pt
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedSortFactor("Pa");
+                  setDrivers(quickSort(drivers, selectedSortFactor, sortOrder));
+                }}
+              >
+                Pa
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedSortFactor("Pr");
+                  setDrivers(quickSort(drivers, selectedSortFactor, sortOrder));
+                }}
+              >
+                Pr
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedSortFactor("Pagg");
+                  setDrivers(quickSort(drivers, selectedSortFactor, sortOrder));
+                }}
+              >
+                Pagg
+              </button>
+            </span>
+          </div>
         </div>
         {!loading ? (
           <section className="flex flex-col flex-wrap gap-4 items-center justify-center">
