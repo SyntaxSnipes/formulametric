@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from "react"
+import { useState, useEffect, use } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
 import MetricGauge from "../components/Gauge/MetricGuage";
 
@@ -8,6 +8,11 @@ export default function DriverScore({ year, selectedDrivers }) {
   const [resultsC, setResultsC] = useState([]);
   const [totalRaces, setTotalRaces] = useState(0);
   const [driverA, driverB, driverC] = selectedDrivers;
+
+  const [racesA, setRacesA] = useState([]);
+  const [racesB, setRacesB] = useState([]);
+  const [racesC, setRacesC] = useState([]);
+
   useEffect(() => {
     setResultsA([]);
     setResultsB([]);
@@ -23,6 +28,19 @@ export default function DriverScore({ year, selectedDrivers }) {
         if (data && Array.isArray(data.drivers) && data.drivers.length > 0) {
           setResultsA(data.races[`driver${driverA.DriverID}`] || []);
           setTotalRaces(data.races[`driver${driverA.DriverID}`][0].NoRounds);
+          console.log(data.races[`driver${driverA.DriverID}`]);
+
+          const racesData = Array(
+            data.races[`driver${driverA.DriverID}`][0].NoRounds,
+          ).fill(null);
+
+          for (const race of data.races[`driver${driverA.DriverID}`]) {
+            racesData[race.RoundNo - 1] = {
+              RoundNo: race.RoundNo,
+              Position: race?.Position ?? null,
+            };
+          }
+          setRacesA(racesData);
         } else {
           console.error("Driver data is missing from API response");
         }
@@ -36,9 +54,18 @@ export default function DriverScore({ year, selectedDrivers }) {
         .then((data) => {
           console.log("API response for driver details:", data);
           if (data && Array.isArray(data.drivers) && data.drivers.length > 0) {
+            setResultsB(data.races[`driver${driverB.DriverID}`] || []);
+            const racesData = Array(
+              data.races[`driver${driverB?.DriverID}`][0].NoRounds,
+            ).fill(null);
 
-            setResultsB(data.races[`driver${driverB?.DriverID}`] || []);
-            setTotalRaces(data.races[`driver${driverB?.DriverID}`][0].NoRounds);
+            for (const race of data.races[`driver${driverB?.DriverID}`]) {  
+              racesData[race.RoundNo - 1] = {
+                RoundNo: race.RoundNo,
+                Position: race?.Position ?? null,
+              };
+            }
+            setRacesB(racesData);
           } else {
             console.error("Driver data is missing from API response");
           }
@@ -53,9 +80,17 @@ export default function DriverScore({ year, selectedDrivers }) {
         .then((data) => {
           console.log("API response for driver details:", data);
           if (data && Array.isArray(data.drivers) && data.drivers.length > 0) {
-
             setResultsC(data.races[`driver${driverC?.DriverID}`] || []);
-            setTotalRaces(data.races[`driver${driverC?.DriverID}`][0].NoRounds);
+            const racesData = Array(
+              data.races[`driver${driverC?.DriverID}`][0].NoRounds,
+            ).fill(null);
+            for (const race of data.races[`driver${driverC?.DriverID}`]) {  
+              racesData[race.RoundNo - 1] = {
+                RoundNo: race.RoundNo,
+                Position: race?.Position ?? null,
+              };
+            }
+            setRacesC(racesData);
           } else {
             console.error("Driver data is missing from API response");
           }
@@ -87,19 +122,19 @@ export default function DriverScore({ year, selectedDrivers }) {
             className="rounded-xl"
             series={[
               {
-                data: resultsA.map((race) => race.Position),
+                data: racesA.map((race) => race?.Position ?? null),
                 curve: "linear",
                 label: driverA?.LastName,
                 color: "#ff1e00",
               },
               {
-                data: resultsB.map((race) => race.Position),
+                data: racesB.map((race) => race?.Position ?? null),
                 curve: "linear",
                 label: driverB?.LastName,
                 color: "#0057b8",
               },
               {
-                data: resultsC.map((race) => race.Position),
+                data: racesC.map((race) => race?.Position ?? null),
                 curve: "linear",
                 label: driverC?.LastName,
                 color: "#ffd700",
@@ -107,8 +142,21 @@ export default function DriverScore({ year, selectedDrivers }) {
             ]}
             xAxis={[
               {
-                data: Array.from({ length: Math.max(resultsA?.length, resultsB?.length, resultsC?.length) }, (_, i) => i + 1),
-                tickNumber: Math.max(resultsA?.length, resultsB?.length, resultsC?.length),
+                data: Array.from(
+                  {
+                    length: Math.max(
+                      racesA?.length,
+                      racesB?.length,
+                      racesC?.length,
+                    ),
+                  },
+                  (_, i) => i + 1,
+                ),
+                tickNumber: Math.max(
+                  racesA?.length,
+                  racesB?.length,
+                  racesC?.length,
+                ),
                 label: "Races",
                 labelStyle: {
                   fill: "#ff1e00", // Make axis title visible in red
