@@ -14,7 +14,7 @@ export default function SelectedDriversList({
           <DriverCard
             key={driver.DriverID}
             driver={driver}
-            decideDriverIcon={() => decideDriverIcon(driver, year)}
+            decideDriverIcon={() => decideDriverIcon(driver, year, false)}
             decideDriverFlag={decideDriverFlag}
             selectedDrivers={selectedDrivers}
             setSelectedDrivers={setSelectedDrivers}

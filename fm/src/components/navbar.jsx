@@ -18,7 +18,7 @@ export default function NavBar() {
             className="[all:unset] cursor-pointer text-[1.5rem]"
             to="/drivers"
           >
-            Drivers
+            Driver Comparisons
           </CustomLink>
           <CustomLink
             className="[all:unset] cursor-pointer text-[1.5rem]"

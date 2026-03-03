@@ -7,11 +7,10 @@ export default function DriverRanking({
   year,
 }) {
   return (
-    
-    <div className="w-full m-2 h-min bg-[#1e1e1e] rounded-xl text-white flex flex-col justify-between border border-[#e8e8e8] shadow-lg hover:bg-slate-900 shadow-[#ff1e0009]">
+    <div className="w-full h-min rounded-xl mx-auto bg-[#1e1e1e] text-white flex flex-col justify-between border border-[#4F4A4A] shadow-lg hover:bg-slate-900 shadow-[#ff1e0009]">
       <div className="flex flex-row justify-between items-center h-fit w-auto">
-        <span className="text-center text-white/60">{index}</span>
-        {decideDriverIcon(driver, year)}
+        <span className="text-center mx-3 text-white/60">{index}</span>
+        {decideDriverIcon(driver, year, true)}
         <div className="flex flex-row text-end pl-3 pr-3 w-full justify-between">
           <div>
             <div className="flex flex-row-reverse justify-end items-center gap-1 uppercase text-right">
