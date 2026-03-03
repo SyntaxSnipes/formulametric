@@ -1,7 +1,7 @@
 import driverImages from "../assets/icons/driverImages.js";
 import normalizeName from "./normalizeName.jsx";
 
-export default function decideDriverIcon(driver, year) {
+export default function decideDriverIcon(driver, year, isRanking) {
   if (!driver || !driver.LastName || !year) return null;
 
   const key = normalizeName(driver.LastName); // This is to handle the edgecase with special letter "hülkenberg" -> "hulkenberg"
@@ -13,10 +13,6 @@ export default function decideDriverIcon(driver, year) {
   }
 
   return (
-    <img
-      src={img}
-      alt={driver.LastName}
-      className="w-[110px] h-full object-cover rounded-s-xl"
-    />
+    isRanking ? <img src={img} alt={driver.LastName} className="w-[110px] h-full object-cover" /> : <img src={img} alt={driver.LastName} className="w-[110px] h-full object-cover rounded-s-xl" />
   );
 }
