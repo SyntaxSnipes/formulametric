@@ -1,24 +1,26 @@
 import { fetchRaces } from "../services/jolpica.service.js"
+
+//asynchronous function to check if the season data is complete
 export async function isSeasonDataComplete(db, year) {
   try {
-    const racesFromAPI = await fetchRaces(year) || [];
-    const expectedRaceCount = racesFromAPI.length;
+    const racesFromAPI = await fetchRaces(year) || []; //fetching the races from the API for the given year
+    const expectedRaceCount = racesFromAPI.length; // fetching the expected number of races for the season
 
-    // Check the Seasons table for the season entry.
+    //check the Seasons table for the season entry.
     const [seasonRows] = await db.query(
       `SELECT SeasonID, NoRounds FROM Seasons WHERE Year = ?`,
       [year],
     );
     if (seasonRows.length === 0) {
-      // No season data exists at all.
       return false;
     }
-    const seasonID = seasonRows[0].SeasonID;
-    // If the stored number of rounds matches the expected count, further check the Races table.
+    const seasonID = seasonRows[0].SeasonID; //fetching the seasonID for the season entry
+
+    //if stored number of rounds matches the expected count, further check the Races table.
     if (Number(seasonRows[0].NoRounds) !== expectedRaceCount) {
       return false;
     }
-    // Check the Races table count for this season.
+    //check the Races table count for this season.
     const [raceCountRows] = await db.query(
       `SELECT COUNT(*) AS raceCount FROM Races WHERE SeasonID = ?`,
       [seasonID],
@@ -35,6 +37,6 @@ export async function isSeasonDataComplete(db, year) {
       `Error checking completeness for season ${year}:`,
       error.message,
     );
-    return false; // If in doubt, force an update.
+    return false; //force update if any error occurs during the completeness check to ensure data integrity
   }
 }

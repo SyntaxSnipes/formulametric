@@ -1,7 +1,8 @@
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
 import MetricGauge from "../components/Gauge/MetricGuage";
 
+//creating DriverScore component to display the performance metrics alongside a line chart of results and a list of race results for the selected drivers in a given year
 export default function DriverScore({ year, selectedDrivers }) {
   const [resultsA, setResultsA] = useState([]);
   const [resultsB, setResultsB] = useState([]);

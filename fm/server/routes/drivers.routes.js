@@ -1,11 +1,15 @@
 import express from "express";
 
 export function createDriversRouter(db, updateDB) {
+  //create expres router for drivers route, handing all rqs to this router
   const router = express.Router();
 
+  //GET route to fetch all drivers and info for a given season
   router.get("/:season", async (req, res) => {
-    await updateDB();
-    const seasonYear = req.params.season;
+    await updateDB(); //calling updateDB to ensure latest data is fetched
+    const seasonYear = req.params.season; //extracting season year from route params
+
+    //query to fetch driver info and metrics for the season, joining necessary tables to get team names
     try {
       const [rows] = await db.query(
         `
@@ -29,18 +33,23 @@ export function createDriversRouter(db, updateDB) {
         [seasonYear],
       );
 
-      res.json(rows);
+      res.json(rows); //return fetched data as JSON
     } catch (err) {
       console.error("Error fetching driver data:", err);
       res.status(500).json({ error: "Failed to fetch driver data" });
     }
   });
 
+
+  //GET route to fetch driver info for list of driver IDs, used in driver comparison
   router.get("/:season/:driverIds", async (req, res) => {
-    const seasonYear = req.params.season;
+    const seasonYear = req.params.season; //extracting season year from route params
+
+    //splitting driverIds param into array of IDs, filtering out any empty strings
     const driverIds = req.params.driverIds.split(",").filter(Boolean);
     const placeholders = driverIds.map(() => "?").join(", ");
 
+    //query to fetch driver info and metrics for the season, joining necessary tables to get team names, and filtering by driver IDs
     try {
       const [driverInfo] = await db.query(
         `
@@ -88,6 +97,6 @@ export function createDriversRouter(db, updateDB) {
       res.status(500).json({ error: "Failed to fetch driver data" });
     }
   });
-
-  return router
+  // return router to be used in index.js (page 51)
+  return router;
 }

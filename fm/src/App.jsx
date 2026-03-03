@@ -1,12 +1,16 @@
-import './styles/index.css'
+import './styles/index.css' //importing base styles
+//importing necessary modules and components for the app, including React Router for routing between pages
 import { Route, Routes } from 'react-router-dom'
 import { Link, useMatch, useResolvedPath } from "react-router-dom"
+
+//importing all the pages and compoenents used in the app, as well as PropTypes for type checking
 import Home from './home'
 import Drivers from './drivers'
 import Rankings from './rankings'
-import PropTypes from 'prop-types';
 import NavBar from './components/navbar'
+import PropTypes from 'prop-types';
 
+//creating main App component that sets up the structure of the app and defines the routes for different pages
 function App() {
   return (
     <div className='m-0 p-0 !box-border'>
@@ -22,6 +26,7 @@ function App() {
   )
 }
 
+//creating CustomLink component to create navigation links in the NavBar, using React Router to determine if the link is active and apply appropriate styling
 function CustomLink({ to, children, ...props }) {
   const resolvedPath = useResolvedPath(to)
   const isActive = useMatch({ path: resolvedPath.pathname, end: true })
@@ -35,9 +40,11 @@ function CustomLink({ to, children, ...props }) {
   )
 }
 
+//defining PropTypes for the CustomLink component to ensure that the 'to' prop is a string and the 'children' prop is a valid React node
 CustomLink.propTypes = {
   to: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired 
 };
 
+//exporting the App component as the default export of the module
 export default App
