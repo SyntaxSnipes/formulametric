@@ -1,47 +1,54 @@
 import { useState, useEffect } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
-import MetricGauge from "../components/Gauge/MetricGuage";
+import MetricGauge from "./Gauge/MetricGauge";
 
 //creating DriverScore component to display the performance metrics alongside a line chart of results and a list of race results for the selected drivers in a given year
 export default function DriverScore({ year, selectedDrivers }) {
+
+  //creating state variables to store the results for the 3 seleced drivers
   const [resultsA, setResultsA] = useState([]);
   const [resultsB, setResultsB] = useState([]);
   const [resultsC, setResultsC] = useState([]);
-  const [totalRaces, setTotalRaces] = useState(0);
+
+  //destructuring the selected drivers for easier access
   const [driverA, driverB, driverC] = selectedDrivers;
 
+  //creating state variables to store the race results for the 3 selected drivers
   const [racesA, setRacesA] = useState([]);
   const [racesB, setRacesB] = useState([]);
   const [racesC, setRacesC] = useState([]);
 
+  //resetting the results state variables whenever the selecteDrivers or year changes
   useEffect(() => {
+    //setting the results state to empty arrays
     setResultsA([]);
     setResultsB([]);
     setResultsC([]);
   }, [selectedDrivers, year]);
 
+  //fetching the race results for the selected drivers whenever the selectedDrivers or year changes, and storing the results in the appropriate state variables
   useEffect(() => {
-    if (!driverA || !driverA.DriverID) return;
-    fetch(`http://localhost:5000/api/drivers/${year}/${driverA.DriverID}`)
+    if (!driverA || !driverA.DriverID) return; //if there's no driverA, return nothing and skip the fetch requests
+    fetch(`http://localhost:5000/api/drivers/${year}/${driverA.DriverID}`) //fetch request to backend for driverA
       .then((res) => res.json())
       .then((data) => {
         console.log("API response for driver details:", data);
         if (data && Array.isArray(data.drivers) && data.drivers.length > 0) {
-          setResultsA(data.races[`driver${driverA.DriverID}`] || []);
-          setTotalRaces(data.races[`driver${driverA.DriverID}`][0].NoRounds);
+          setResultsA(data.races[`driver${driverA.DriverID}`] || []); //setting the results state for driverA to the fetched data, empty array if no data found
           console.log(data.races[`driver${driverA.DriverID}`]);
 
           const racesData = Array(
             data.races[`driver${driverA.DriverID}`][0].NoRounds,
-          ).fill(null);
+          ).fill(null); //initializing an array to store the race results for driverA, with length equal to the number of rounds in the season, filled with null values
 
+          // looping through the fetched race results for driver A and populating the racesData array with the position for each round, using the round number as the index
           for (const race of data.races[`driver${driverA.DriverID}`]) {
             racesData[race.RoundNo - 1] = {
               RoundNo: race.RoundNo,
               Position: race?.Position ?? null,
             };
           }
-          setRacesA(racesData);
+          setRacesA(racesData); //setting the races state for driverA to the populated racesData array which contains the position for each round, null if no data found for that round
         } else {
           console.error("Driver data is missing from API response");
         }
@@ -49,24 +56,28 @@ export default function DriverScore({ year, selectedDrivers }) {
       .catch((err) => {
         console.error("Error fetching driver details:", err);
       });
+
+    //check if there's a selected second driver
     if (driverB?.DriverID) {
-      fetch(`http://localhost:5000/api/drivers/${year}/${driverB?.DriverID}`)
+      fetch(`http://localhost:5000/api/drivers/${year}/${driverB?.DriverID}`) //fetch request to backend for driverB, if exists
         .then((res) => res.json())
         .then((data) => {
           console.log("API response for driver details:", data);
           if (data && Array.isArray(data.drivers) && data.drivers.length > 0) {
-            setResultsB(data.races[`driver${driverB.DriverID}`] || []);
+            setResultsB(data.races[`driver${driverB.DriverID}`] || []); //setting the results state for driverB, if exists, to the fetched data, empty array if no data found
+
             const racesData = Array(
               data.races[`driver${driverB?.DriverID}`][0].NoRounds,
-            ).fill(null);
-
+            ).fill(null); //initializing an array to store the race results for driverB, if exists, with length equal to the number of rounds in the season, filled with null values
+            
+            //looping through the fetched race results for driverB, if exists, and populating the racesData array with the position for each round, using the round number as the index
             for (const race of data.races[`driver${driverB?.DriverID}`]) {  
               racesData[race.RoundNo - 1] = {
                 RoundNo: race.RoundNo,
                 Position: race?.Position ?? null,
               };
             }
-            setRacesB(racesData);
+            setRacesB(racesData); //setting the races state for driverB, if exists, to the populated racesData array which contains the position for each round, null if no data found for that round
           } else {
             console.error("Driver data is missing from API response");
           }
@@ -75,23 +86,28 @@ export default function DriverScore({ year, selectedDrivers }) {
           console.error("Error fetching driver details:", err);
         });
     }
+
+    //check if there's a selected third driver
     if (driverC?.DriverID) {
-      fetch(`http://localhost:5000/api/drivers/${year}/${driverC?.DriverID}`)
+      fetch(`http://localhost:5000/api/drivers/${year}/${driverC?.DriverID}`) //fetch request to backend for driverC, if exists
         .then((res) => res.json())
         .then((data) => {
           console.log("API response for driver details:", data);
           if (data && Array.isArray(data.drivers) && data.drivers.length > 0) {
-            setResultsC(data.races[`driver${driverC?.DriverID}`] || []);
+            setResultsC(data.races[`driver${driverC?.DriverID}`] || []); //setting the results state for driverC, if exists, to the fetched data, empty array if no data found
+
             const racesData = Array(
               data.races[`driver${driverC?.DriverID}`][0].NoRounds,
-            ).fill(null);
+            ).fill(null); //initializing an array to store the race results for driverC, if exists, with length equal to the number of rounds in the season, filled with null values
+
+            //looping through the fetched race results for driverC, if exists, and populating the racesData array with the position for each round, using the round number as the index
             for (const race of data.races[`driver${driverC?.DriverID}`]) {  
               racesData[race.RoundNo - 1] = {
                 RoundNo: race.RoundNo,
                 Position: race?.Position ?? null,
               };
             }
-            setRacesC(racesData);
+            setRacesC(racesData); //setting the races state for driverC, if exists, to the populated racesData array which contains the position for each round, null if no data found for that round
           } else {
             console.error("Driver data is missing from API response");
           }
@@ -107,40 +123,46 @@ export default function DriverScore({ year, selectedDrivers }) {
   }
 
   return (
+    //main container for the DriverScore component
     <div className="flex flex-col my-15 align-center">
+
+      {/*Displays the first name of the selected drivers*/}
       <h2 className="text-4xl text-[#ff1e00] text-center py-10 flex flex-row">
+        Statistics for drivers: 
         {selectedDrivers.map((driver) => (
           <span key={driver.DriverID} className="mx-2">
-            {driver.FirstName}'s
+            {driver.FirstName}
           </span>
         ))}
-        statistics
       </h2>
-
+      
+      {/*Container for the line chart and metrics display*/}
       <div className="flex flex-col items-center justify-center bg-[#15151e] text-[#ff1e00] p-4 rounded-lg border my-15 mx-5 gap-5">
         <div className="flex flex-row gap-10">
+          {/*Line chart to display the race positions for the selected drivers across the season*/}
           <LineChart
             className="rounded-xl"
             series={[
               {
-                data: racesA.map((race) => race?.Position ?? null),
+                data: racesA.map((race) => race?.Position ?? null), //mapping the racesA data to extract the position for each round, using null if no data found for that round
                 curve: "linear",
                 label: driverA?.LastName,
                 color: "#ff1e00",
               },
               {
-                data: racesB.map((race) => race?.Position ?? null),
+                data: racesB.map((race) => race?.Position ?? null), //mapping the racesB data to extract the position for each round, using null if no data found for that round
                 curve: "linear",
                 label: driverB?.LastName,
                 color: "#0057b8",
               },
               {
-                data: racesC.map((race) => race?.Position ?? null),
+                data: racesC.map((race) => race?.Position ?? null), //mapping the racesC data to extract the position for each round, using null if no data found for that round
                 curve: "linear",
                 label: driverC?.LastName,
                 color: "#ffd700",
               },
             ]}
+            // configuring the x and y axes for the line chart
             xAxis={[
               {
                 data: Array.from(
@@ -234,7 +256,7 @@ export default function DriverScore({ year, selectedDrivers }) {
               padding: 8,
             }}
           />
-
+          {/*Display of the performance metrics for the selected drivers using MetricGauge components, with conditional rendering based on the number of selected drivers*/}
           <div className="flex flex-col gap-4">
             <h2 className="text-4xl">{driverA?.FirstName}'s Metrics</h2>
             <div className="flex flex-row gap-2 justify-center items-center mt-1">
@@ -334,6 +356,8 @@ export default function DriverScore({ year, selectedDrivers }) {
             )}
           </div>
         </div>
+
+        {/*Displaying the race results for the selected drivers in a list format, with conditional rendering based on the number of selected drivers*/}
         <div className="flex flex-row gap-5">
           <span>
             {resultsA.map((race, index) => (

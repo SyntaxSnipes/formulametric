@@ -22,7 +22,7 @@ export default function DriverCard({
       }}
     >
       <div className="flex flex-row justify-between items-center h-fit w-auto">
-        {decideDriverIcon(driver, year)} {/*displaying the appropriate driver's portrait*/}
+        {decideDriverIcon(driver, year, false)} {/*displaying the appropriate driver's portrait*/}
 
         <div className="flex flex-col text-end pl-3 pr-3 w-full align-bottom">
           <div className="flex flex-row justify-end items-center gap-1 uppercase text-right">

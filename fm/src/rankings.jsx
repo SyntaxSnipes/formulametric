@@ -1,25 +1,29 @@
 import { useEffect, useState, useMemo } from "react";
 import fmlogo from "/fmicon.png";
-import BeatLoader from "react-spinners/BeatLoader";
+import BeatLoader from "react-spinners/BeatLoader"; //used for loading screen
 
+//importing components for displaying the Rankings of the Rankings page
+import DriverRanking from "./components/DriverRanking";
+
+//importing utility functions and components for the Drivers page
+import quickSort from "./utils/quickSort";
 import decideDriverFlag from "./utils/decideDriverFlag";
 import decideDriverIcon from "./utils/decideDriverIcon";
-
-import DriverRanking from "./components/DriverRanking";
-import quickSort from "./utils/quickSort";
 
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 
+//creating Rankings component to display the rankings of drivers for a selected season
 function Rankings() {
-  const [drivers, setDrivers] = useState([]);
-  const [year, setYear] = useState("2022");
-  const [loading, setLoading] = useState(true);
-  const [selectedSortFactor, setSelectedSortFactor] = useState("Pagg");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [drivers, setDrivers] = useState([]); //state to hold the driver data fetched from the backend
+  const [year, setYear] = useState("2022"); //state to hold the selected year for which the rankings are displayed, default is 2022
+  const [loading, setLoading] = useState(true);  //state to track whether the data is still loading, used to show a loading screen while fetching data
+  const [selectedSortFactor, setSelectedSortFactor] = useState("Pagg"); //state to hold the selected factor by which the drivers will be sorted, default is "Pagg"
+  const [sortOrder, setSortOrder] = useState("desc"); //state to hold the selected sort order (asc or desc) for sorting the drivers, default is desc
 
+  //whenever the year changes, load the driver data and store in in drivers state
   useEffect(() => {
-    setLoading(true); // Set loading to true whenever the year changes or the page is refreshed
+    setLoading(true); //set loading to true whenever the year changes or the page is refreshed
     fetch(`http://localhost:5000/api/drivers/${year}`)
       .then((res) => res.json())
       .then((data) => {
@@ -29,10 +33,12 @@ function Rankings() {
       })
       .catch((err) => {
         console.error("Error fetching drivers:", err);
-        setLoading(false); // Set loading to false even if there's an error
+        setLoading(false); //set loading to false even if there's an error
       });
   }, [year]);
 
+
+  //useMemo to memoize the sorted drivers list so that it only recomputes when the drivers data, selected sort factor, or sort order changes
   const sortedDrivers = useMemo(() => {
     if (!drivers.length) return [];
     return quickSort([...drivers], selectedSortFactor, sortOrder);
@@ -40,7 +46,8 @@ function Rankings() {
 
   return (
     <>
-      <div className="drivers w-screen text-[#ff1e00] px-6 my-10 my-auto mx-auto">
+      <div className="drivers w-screen text-[#ff1e00] px-6 my-10 mx-auto">
+        {/*row of Buttons displaying the Seasons available */}
         <h1 className="text-4xl pt-10 pb-5">Select the F1 season</h1>
         <section className="flex flex-row gap-4 mb-4">
           <button
@@ -68,8 +75,12 @@ function Rankings() {
             2025
           </button>
         </section>
+
+        {/*rows of driver rankings and options to change sorting order*/}
         <div className="flex flex-row w-full justify-between">
           <h2 className="text-4xl">{year}&apos;s Drivers Rankings</h2>
+
+          {/*Sort order and factor selection UI*/}
           <div className="flex flex-row gap-6 py-auto">
             <SortOrderBox sortOrder={sortOrder} setSortOrder={setSortOrder} />
             <span className="flex flex-row gap-3 my-auto">
@@ -99,7 +110,7 @@ function Rankings() {
             </span>
           </div>
         </div>
-        {!loading ? (
+        {!loading ? ( //if loading is false, show the sorted driver rankings
           <section className="flex flex-col flex-wrap gap-4 items-center justify-center mt-6 ">
             <section className="flex flex-wrap items-center justify-center m-0 rounded-xl border-[#4F4A4A] bg-[#4F4A4A] border">
               {sortedDrivers.map((driver, index) => (
@@ -115,7 +126,7 @@ function Rankings() {
               ))}
             </section>
           </section>
-        ) : (
+        ) : ( //if loading is true, show the loading screen
           <div className="fixed inset-0 flex justify-center items-center flex-col p-1 bg-[#15151e]">
             <img
               src={fmlogo}
@@ -148,6 +159,7 @@ function Rankings() {
   );
 }
 
+//creating SortOrderBox component to display the sort order selection dropdown in the Rankings page
 function SortOrderBox({ sortOrder, setSortOrder }) {
   const options = [
     { label: "Best to Worst", value: "desc" },
