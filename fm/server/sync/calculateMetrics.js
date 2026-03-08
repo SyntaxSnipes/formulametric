@@ -1,6 +1,5 @@
 import {
   fetchDriverStandings,
-  fetchStandingsForDriver,
 } from "../services/jolpica.service.js";
 
 import {
@@ -77,7 +76,7 @@ export async function calculateAllMetrics(db, year, teamMap) {
     const validPositions = positionsQueryResult
       .filter(
         (row) =>
-          row.Position <= 15 ||
+          row.Position <= 15 &&
           ![
             "Engine",
             "Power Unit",
@@ -123,29 +122,7 @@ export async function calculateAllMetrics(db, year, teamMap) {
       continue;
     }
 
-    //initializing points and position variables respectively
-    let points = 0;
-    let position = null;
 
-    //fetching the driver's standings for the season to get total points and final position in the championship
-    try {
-      const driverStanding =
-        (await fetchStandingsForDriver(year, driverRow.API_DriverID)) || [];
-
-      if (driverStanding) {
-        points = parseInt(driverStanding.points, 10) || 0; // Convert points to an integer safely
-        position = parseInt(driverStanding.position, 10) || null; // Convert position safely
-
-        console.log(
-          `${driverRow.FirstName} ${driverRow.LastName} (${year}) -> Position: ${position}, Points: ${points}`,
-        );
-      }
-    } catch (error) {
-      //logging any errors that occur while fetching the driver's standings for the given season
-      console.error(
-        `Failed to fetch standings for ${driverRow.FirstName} ${driverRow.LastName} (${year}): ${error.message}`,
-      );
-    }
 
     //if teammate exists, loop through the driver and teammate positions to count find dWin and tWin
     for (const row of positionsQueryResult) {
@@ -159,38 +136,38 @@ export async function calculateAllMetrics(db, year, teamMap) {
         else if (row.Position > teammatePos) tWin++;
       }
     }
-  }
 
-  //calculating the metrics for the driver using the defined functions and the fetched data, and inserting/updating the metrics in the PerformanceMetrics table
-  const n = validPositions.length;
-  const sumpos = validPositions.reduce((sum, pos) => sum + pos, 0);
-  const sumpos2 = validPositions.reduce((sum, pos) => sum + pos ** 2, 0);
+    //calculating the metrics for the driver using the defined functions and the fetched data, and inserting/updating the metrics in the PerformanceMetrics table
+    const n = validPositions.length;
+    const sumpos = validPositions.reduce((sum, pos) => sum + pos, 0);
+    const sumpos2 = validPositions.reduce((sum, pos) => sum + pos ** 2, 0);
 
-  try {
-    const Pc = calculatePc(sumpos, sumpos2, n);
-    const Pt = calculatePt(validPositions);
-    const driverStats = driverPointsMap[driverRow.API_DriverID];
-    const pointsForPa = driverStats?.pts ?? 0;
+    try {
+      const Pc = calculatePc(sumpos, sumpos2, n);
+      const Pt = calculatePt(validPositions);
+      const driverStats = driverPointsMap[driverRow.API_DriverID];
+      const points = driverStats?.pts ?? 0;
 
-    const Pa = calculatePaZ(pointsForPa, mean, std);
+      const Pa = calculatePaZ(points, mean, std);
 
-    const Pr = calculatePr(dWin, tWin);
-    const Pagg = calculatePagg(Pr, Pc, Pt, Pa);
+      const Pr = calculatePr(dWin, tWin);
+      const Pagg = calculatePagg(Pr, Pc, Pt, Pa);
 
-    //loggin the calculated metrics for the driver for debugging purposes
-    console.log(
-      `For Driver ${driverName} (${driverId}) in Season ${seasonID}: Pc=${Pc}, Pt=${Pt}, Pa=${Pa}, Pr=${Pr}`,
-    );
-    console.log(`Pagg: ${Pagg}`);
+      //loggin the calculated metrics for the driver for debugging purposes
+      console.log(
+        `For Driver ${driverName} (${driverId}) in Season ${seasonID}: Pc=${Pc}, Pt=${Pt}, Pa=${Pa}, Pr=${Pr}`,
+      );
+      console.log(`Pagg: ${Pagg}`);
 
-    //handling cases where any of the metrics are null or NaN to ensure database integrity, setting them to 0 in such cases
-    const safePc = Pc == null || isNaN(Pc) ? 0 : Pc;
-    const safePt = Pt == null || isNaN(Pt) ? 0 : Pt;
-    const safePa = Pa == null || isNaN(Pa) ? 0 : Pa;
-    const safePr = Pr == null || isNaN(Pr) ? 0 : Pr;
+      //handling cases where any of the metrics are null or NaN to ensure database integrity, setting them to 0 in such cases
+      const safePc = Pc == null || isNaN(Pc) ? 0 : Pc;
+      const safePt = Pt == null || isNaN(Pt) ? 0 : Pt;
+      const safePa = Pa == null || isNaN(Pa) ? 0 : Pa;
+      const safePr = Pr == null || isNaN(Pr) ? 0 : Pr;
+      const safePagg = Pagg == null || isNaN(Pagg) ? 0 : Pagg;
 
-    //inserting/updating the calculated metrics for the driver in the PerformanceMetrics table
-    const updateQuery = `
+      //inserting/updating the calculated metrics for the driver in the PerformanceMetrics table
+      const updateQuery = `
         INSERT INTO PerformanceMetrics (DriverID, SeasonID, PConsistency, PTrajectory, PAbsolute, PRelative, PAggregate)
         VALUES (?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE 
@@ -200,19 +177,20 @@ export async function calculateAllMetrics(db, year, teamMap) {
           PRelative = VALUES(PRelative),
           PAggregate = VALUES(PAggregate);
       `;
-    
-    await db.query(updateQuery, [
-      driverId,
-      seasonID,
-      safePc,
-      safePt,
-      safePa,
-      safePr,
-      Pagg,
-    ]);
-  } catch (error) {
-    console.error(
-      `Error calculating P values for Driver ${driverName} (${driverId}): ${error.message}`,
-    );
+
+      await db.query(updateQuery, [
+        driverId,
+        seasonID,
+        safePc,
+        safePt,
+        safePa,
+        safePr,
+        safePagg,
+      ]);
+    } catch (error) {
+      console.error(
+        `Error calculating P values for Driver ${driverName} (${driverId}): ${error.message}`,
+      );
+    }
   }
 }

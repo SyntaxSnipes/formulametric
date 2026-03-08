@@ -23,9 +23,11 @@ export function calculatePt(positions) {
   let longTermTrend = (avgQ1 - avgQ4) / Math.max(avgQ1, avgQ4);
   let midTermTrend = (avgQ2 - avgQ3) / Math.max(avgQ2, avgQ3);
 
+  let k = 1.5; //weighting factor to adjust sensitivity of Pt to trajectory trends
+  
   //compute final trajectory score
-  let Pt = 0.5 + 0.15 * longTermTrend + 0.1 * midTermTrend;
+  let Pt = k * (0.5 + 0.15 * longTermTrend + 0.1 * midTermTrend);
 
   //return Pt rounded to 2 d.p., and ensure it's between 0 and 1
-  return 1.5 * Number(Math.max(0, Math.min(1, Pt)).toPrecision(2));
+  return Number(Math.max(0, Math.min(1, Pt))).toFixed(2);
 }

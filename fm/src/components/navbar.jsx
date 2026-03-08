@@ -6,7 +6,7 @@ import { Link, useMatch, useResolvedPath } from "react-router-dom";
 export default function NavBar() {
   return (
     <nav>
-      <div className="flex justify-between items-center px-8 py-[0.3rem] h-[4.3rem] bg-[#15151e] text-[#ff1e00] fixed top-[0] left-[0] w-screen">
+      <div className="flex justify-between items-center px-8 py-[0.3rem] h-[4.3rem] z-10 bg-[#15151e] text-[#ff1e00] fixed top-[0] left-[0] w-screen">
         <img className="w-[4.2rem] h-auto" src={fmlogo} alt="Formula Metric" />
         <span className="flex gap-4 list-none">
           {/*Link that goes to Home page*/}
@@ -28,7 +28,7 @@ export default function NavBar() {
             className="[all:unset] cursor-pointer text-[1.5rem]"
             to="/rankings"
           >
-            Rankings
+            Driver Rankings
           </CustomLink>
         </span>
       </div>

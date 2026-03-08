@@ -13,14 +13,14 @@ export default function quickSort(array, selectedSortFactor, sortOrder) {
     return array;
   }
   let ltArr = []; //array to hold elements less than the pivot
-  let eqArr = []; //array to hold elements equal to the pivot
+  let etArr = []; //array to hold elements equal to the pivot
   let gtArr = []; //array to hold elements greater than the pivot
 
   const key = mappingDict[selectedSortFactor]; //getting the corresponding key in the driver objects for the selected sort factor using the mapping dict
 
   let pivot = array[Math.floor(Math.random() * array.length)]; //choosing a random element as the pivot for partitioning
 
-  //partitioning the array into ltArr, eqArr, and gtArr based on the selected sort order (ascending or descending)
+  //partitioning the array into ltArr, etArr, and gtArr based on the selected sort order (ascending or descending)
   if (sortOrder === "asc") {
     for (let i = 0; i < array.length; i++) {
       if (array[i][key] > pivot[key]) {
@@ -28,7 +28,7 @@ export default function quickSort(array, selectedSortFactor, sortOrder) {
       } else if (array[i][key] < pivot[key]) {
         ltArr.push(array[i]);
       } else {
-        eqArr.push(array[i]);
+        etArr.push(array[i]);
       }
     }
   } else if (sortOrder === "desc") {
@@ -38,15 +38,15 @@ export default function quickSort(array, selectedSortFactor, sortOrder) {
       } else if (array[i][key] > pivot[key]) {
         ltArr.push(array[i]);
       } else {
-        eqArr.push(array[i]);
+        etArr.push(array[i]);
       }
     }
   }
 
-  //recursively sorting the ltArr and gtArr and concatenating the results with eqArr to get the final sorted array
+  //recursively sorting the ltArr and gtArr and concatenating the results with etArr to get the final sorted array
   return [
     ...quickSort(ltArr, selectedSortFactor, sortOrder),
-    ...eqArr,
+    ...etArr,
     ...quickSort(gtArr, selectedSortFactor, sortOrder),
   ];
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import fmlogo from "/fmicon.png";
 import BeatLoader from "react-spinners/BeatLoader"; //used for loading screen
+import process from "process";
 
 //importing utility functions and components for the Drivers page
 import decideDriverFlag from "./utils/decideDriverFlag"; //page xx
@@ -14,7 +15,7 @@ import DriverCard from "./components/DriverCard"; //page xx
 //creating Drivers component to display the driver selection page, allowing users to select a season and choose drivers to compare based on their performance metrics
 function Drivers() {
   const [drivers, setDrivers] = useState([]);
-  const [year, setYear] = useState("2024");
+  const [year, setYear] = useState("2025");
   const [loading, setLoading] = useState(true);
 
   //whenever the year changes, set the selectedDrivers list to empty array
@@ -25,7 +26,7 @@ function Drivers() {
   //whenever the year changes, load the driver data and store in in state
   useEffect(() => {
     setLoading(true); //set loading to true whenever the year changes or the page is refreshed
-    fetch(`http://localhost:5000/api/drivers/${year}`) //fetching driver data for the selected year from the backend
+    fetch(`http://${process.env.BACKEND_URL}/api/drivers/${year}`) //fetching driver data for the selected year from the backend
       .then((res) => res.json())
       .then((data) => {
         setDrivers(data); //set fetched data into drivers state

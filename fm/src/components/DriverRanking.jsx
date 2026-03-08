@@ -8,7 +8,7 @@ export default function DriverRanking({
   year,
 }) {
   return (
-    <div className="w-full h-min rounded-xl mx-auto bg-[#1e1e1e] text-white flex flex-col justify-between border border-[#4F4A4A] shadow-lg hover:bg-slate-900 shadow-[#ff1e0009]">
+    <div className="w-full h-min rounded-xl mx-auto bg-[#1e1e1e] text-white flex flex-col justify-between border border-[#4F4A4A] shadow-lg hover:bg-slate-900 shadow-[#ff1e0009] z-0">
       <div className="flex flex-row justify-between items-center h-fit w-auto">
         <span className="text-center mx-3 text-white/60">{index}</span>
         {decideDriverIcon(driver, year, true)} {/*displaying the appropriate driver's portrait*/}
@@ -33,31 +33,31 @@ export default function DriverRanking({
               className="h-min"
               style={selectedSortFactor === "Pc" ? { color: "#fff" } : {}}
             >
-              Pc: {driver.PConsistency.toPrecision(2)} {/*rounded to 2 s.f. just in case*/}
+              Pc: {driver.PConsistency}
             </span>
             <span
               className="h-min"
               style={selectedSortFactor === "Pt" ? { color: "#fff" } : {}}
             >
-              Pt: {driver.PTrajectory.toPrecision(2)} {/*rounded to 2 s.f. just in case*/}
+              Pt: {driver.PTrajectory}
             </span>
             <span
               className="h-min"
               style={selectedSortFactor === "Pa" ? { color: "#fff" } : {}}
             >
-              Pa: {driver.PAbsolute.toPrecision(2)} {/*rounded to 2 s.f. just in case*/}
+              Pa: {driver.PAbsolute}
             </span>
             <span
               className="h-min"
               style={selectedSortFactor === "Pr" ? { color: "#fff" } : {}}
             >
-              Pr: {driver.PRelative.toPrecision(2)} {/*rounded to 2 s.f. just in case*/}
+              Pr: {driver.PRelative}
             </span>
             <span
               className="h-min"
               style={selectedSortFactor === "Pagg" ? { color: "#fff" } : {}}
             >
-              Pagg: {driver.PAggregate.toPrecision(2)} {/*rounded to 2 s.f. just in case*/}
+              Pagg: {driver.PAggregate}
             </span>
           </div>
         </div>

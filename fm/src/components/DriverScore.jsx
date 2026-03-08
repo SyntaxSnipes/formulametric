@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
 import MetricGauge from "./Gauge/MetricGauge";
+import process from "process";
 
 //creating DriverScore component to display the performance metrics alongside a line chart of results and a list of race results for the selected drivers in a given year
 export default function DriverScore({ year, selectedDrivers }) {
@@ -18,18 +19,25 @@ export default function DriverScore({ year, selectedDrivers }) {
   const [racesB, setRacesB] = useState([]);
   const [racesC, setRacesC] = useState([]);
 
-  //resetting the results state variables whenever the selecteDrivers or year changes
+  //resetting the results state variables whenever the selectedDrivers or year changes
   useEffect(() => {
     //setting the results state to empty arrays
     setResultsA([]);
     setResultsB([]);
     setResultsC([]);
+
+    setRacesA([]);
+    setRacesB([]);
+    setRacesC([]);
   }, [selectedDrivers, year]);
 
   //fetching the race results for the selected drivers whenever the selectedDrivers or year changes, and storing the results in the appropriate state variables
   useEffect(() => {
     if (!driverA || !driverA.DriverID) return; //if there's no driverA, return nothing and skip the fetch requests
-    fetch(`http://localhost:5000/api/drivers/${year}/${driverA.DriverID}`) //fetch request to backend for driverA
+      setResultsA([]);
+      setResultsB([]);
+      setResultsC([]);
+    fetch(`http://${process.env.BACKEND_URL}/api/drivers/${year}/${driverA.DriverID}`) //fetch request to backend for driverA
       .then((res) => res.json())
       .then((data) => {
         console.log("API response for driver details:", data);
@@ -59,7 +67,7 @@ export default function DriverScore({ year, selectedDrivers }) {
 
     //check if there's a selected second driver
     if (driverB?.DriverID) {
-      fetch(`http://localhost:5000/api/drivers/${year}/${driverB?.DriverID}`) //fetch request to backend for driverB, if exists
+      fetch(`http://${process.env.BACKEND_URL}/api/drivers/${year}/${driverB?.DriverID}`) //fetch request to backend for driverB, if exists
         .then((res) => res.json())
         .then((data) => {
           console.log("API response for driver details:", data);
@@ -89,7 +97,7 @@ export default function DriverScore({ year, selectedDrivers }) {
 
     //check if there's a selected third driver
     if (driverC?.DriverID) {
-      fetch(`http://localhost:5000/api/drivers/${year}/${driverC?.DriverID}`) //fetch request to backend for driverC, if exists
+      fetch(`http://${process.env.BACKEND_URL}/api/drivers/${year}/${driverC?.DriverID}`) //fetch request to backend for driverC, if exists
         .then((res) => res.json())
         .then((data) => {
           console.log("API response for driver details:", data);
@@ -124,7 +132,7 @@ export default function DriverScore({ year, selectedDrivers }) {
 
   return (
     //main container for the DriverScore component
-    <div className="flex flex-col my-15 align-center">
+    <div className="flex flex-col my-15 align-center z-1">
 
       {/*Displays the first name of the selected drivers*/}
       <h2 className="text-4xl text-[#ff1e00] text-center py-10 flex flex-row">

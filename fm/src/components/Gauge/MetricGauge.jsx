@@ -9,7 +9,7 @@ import GaugePointer from "./GaugePointer";
 //creating MetricGauge component to display a gauge chart for a specific performance metric, with the value, title, and color passed as props
 export default function MetricGauge({value, title, color}) {
   return (
-    <div className="flex flex-col items-center text-white">
+    <div className="flex flex-col items-center text-white z-0">
       <GaugeContainer
         min={0}
         max={100}

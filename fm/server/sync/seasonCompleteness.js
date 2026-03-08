@@ -4,7 +4,7 @@ import { fetchRaces } from "../services/jolpica.service.js"
 export async function isSeasonDataComplete(db, year) {
   try {
     const racesFromAPI = await fetchRaces(year) || []; //fetching the races from the API for the given year
-    const expectedRaceCount = racesFromAPI.length; // fetching the expected number of races for the season
+    const expectedRaceCount = racesFromAPI.length; //fetching the expected number of races for the season
 
     //check the Seasons table for the season entry.
     const [seasonRows] = await db.query(

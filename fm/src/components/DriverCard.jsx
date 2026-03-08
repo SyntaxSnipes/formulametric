@@ -10,7 +10,7 @@ export default function DriverCard({
   return (
     //clicking on card will toggle selection of the driver, allowing max 3 drivers to be selected, and applying styling changes to indicate selection
     <div
-      className="w-[350px] h-min bg-[#1e1e1e] rounded-xl text-white flex flex-col justify-between border border-[#e8e8e8] shadow-lg hover:bg-slate-900 shadow-[#ff1e0009]"
+      className="w-[350px] h-min bg-[#1e1e1e] rounded-xl text-white flex flex-col justify-between border border-[#e8e8e8] shadow-lg hover:bg-slate-900 shadow-[#ff1e0009] z-0"
       onClick={() => {
         if (selectedDrivers.find((d) => d.DriverID === driver.DriverID)) {
           setSelectedDrivers(
