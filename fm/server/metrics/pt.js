@@ -29,5 +29,5 @@ export function calculatePt(positions) {
   let Pt = k * (0.5 + 0.15 * longTermTrend + 0.1 * midTermTrend);
 
   //return Pt rounded to 2 d.p., and ensure it's between 0 and 1
-  return Number(Math.max(0, Math.min(1, Pt))).toFixed(2);
+  return Number(Math.max(0, Math.min(1, Pt)).toFixed(2));
 }

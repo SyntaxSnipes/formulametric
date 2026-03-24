@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
-import fmlogo from "/fmicon.png";
+import fmlogo from "/fmicon.svg";
 import BeatLoader from "react-spinners/BeatLoader"; //used for loading screen
-import process from "process";
 
 //importing components for displaying the Rankings of the Rankings page
 import DriverRanking from "./components/DriverRanking";
@@ -25,7 +24,7 @@ function Rankings() {
   //whenever the year changes, load the driver data and store in in drivers state
   useEffect(() => {
     setLoading(true); //set loading to true whenever the year changes or the page is refreshed
-    fetch(`http://${process.env.BACKEND_URL}/api/drivers/${year}`)
+    fetch(`http://localhost:5000/api/drivers/${year}`)
       .then((res) => res.json())
       .then((data) => {
         setDrivers(data);

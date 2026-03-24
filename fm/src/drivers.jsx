@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import fmlogo from "/fmicon.png";
+import fmlogo from "/fmicon.svg";
 import BeatLoader from "react-spinners/BeatLoader"; //used for loading screen
-import process from "process";
 
 //importing utility functions and components for the Drivers page
 import decideDriverFlag from "./utils/decideDriverFlag"; //page xx
@@ -26,7 +25,7 @@ function Drivers() {
   //whenever the year changes, load the driver data and store in in state
   useEffect(() => {
     setLoading(true); //set loading to true whenever the year changes or the page is refreshed
-    fetch(`http://${process.env.BACKEND_URL}/api/drivers/${year}`) //fetching driver data for the selected year from the backend
+    fetch(`http://localhost:5000/api/drivers/${year}`) //fetching driver data for the selected year from the backend
       .then((res) => res.json())
       .then((data) => {
         setDrivers(data); //set fetched data into drivers state
