@@ -1,6 +1,4 @@
-import {
-  fetchDriverStandings,
-} from "../services/jolpica.service.js";
+import { fetchDriverStandings } from "../services/jolpica.service.js";
 
 import {
   calculatePaZ,
@@ -10,11 +8,26 @@ import {
   calculatePt,
 } from "../metrics/index.js";
 
-//asynchronous function calculate all metrics for all drivers in a season
+//asynchronous function calculate all metrics for all drivers in a season, filtering out any non-racing statuses for fairness.
 export async function calculateAllMetrics(db, year, teamMap) {
   //fetching the points for all drivers in the season to calculate mean and std deviation for PaZ calculation
   const pointsList = [];
   const driverPointsMap = {};
+
+  //list of statuses that are usually out of the driver's control and should be ignored in the metric calculations to ensure fairness
+  const ignoreStatuses = [
+    "Engine",
+    "Power Unit",
+    "Brakes",
+    "Collision damage",
+    "Retired",
+    "Fuel leak",
+    "Overheating",
+    "Mechanical",
+    "Disqualified",
+    "Water pressure",
+    "Front wing",
+  ];
 
   //fetching driver standings to get points for all drivers in the season
   const standings = await fetchDriverStandings(year);
@@ -77,19 +90,7 @@ export async function calculateAllMetrics(db, year, teamMap) {
       .filter(
         (row) =>
           row.Position <= 15 &&
-          ![
-            "Engine",
-            "Power Unit",
-            "Brakes",
-            "Collision damage",
-            "Retired",
-            "Fuel leak",
-            "Overheating",
-            "Mechanical",
-            "Disqualified",
-            "Water pressure",
-            "Front wing",
-          ].includes(row.Status),
+          !ignoreStatuses.includes(row.Status),
       )
       .map((row) => row.Position);
 
@@ -97,18 +98,7 @@ export async function calculateAllMetrics(db, year, teamMap) {
 
     //logging all positions and statuses for the driver, marking any non-racing statuses that are ignored in the metric calculations
     positionsQueryResult.forEach((row) => {
-      const statusNote = [
-        "Engine",
-        "Power Unit",
-        "Brakes",
-        "Collision damage",
-        "Retired",
-        "Fuel leak",
-        "Overheating",
-        "Mechanical",
-        "Disqualified",
-        "Water pressure",
-      ].includes(row.Status)
+      const statusNote = ignoreStatuses.includes(row.Status)
         ? ` (Ignored: ${row.Status})`
         : "";
       console.log(
@@ -121,8 +111,6 @@ export async function calculateAllMetrics(db, year, teamMap) {
       console.warn(`No valid race data for Driver ${driverName}`);
       continue;
     }
-
-
 
     //if teammate exists, loop through the driver and teammate positions to count find dWin and tWin
     for (const row of positionsQueryResult) {

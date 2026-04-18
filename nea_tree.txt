@@ -44,13 +44,15 @@
         │           └── 2025
         ├── components
         │   ├── DriverCard.jsx
+        │   ├── DriverMetrics.jsx
         │   ├── DriverRanking.jsx
+        │   ├── DriverResultsList.jsx
         │   ├── DriverScore.jsx
         │   ├── Gauge
         │   │   ├── GaugePointer.jsx
-        │   │   └── MetricGuage.jsx
-        │   ├── SelectedDriversList.jsx
-        │   └── navbar.jsx
+        │   │   └── MetricGauge.jsx
+        │   ├── NavBar.jsx
+        │   └── SelectedDriversList.jsx
         ├── drivers.jsx
         ├── home.jsx
         ├── main.jsx
@@ -63,4 +65,4 @@
             ├── normalizeName.jsx
             └── quickSort.jsx
 
-22 directories, 41 files
+22 directories, 43 files

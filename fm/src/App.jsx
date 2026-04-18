@@ -7,7 +7,7 @@ import { Link, useMatch, useResolvedPath } from "react-router-dom"
 import Home from './home'
 import Drivers from './drivers'
 import Rankings from './rankings'
-import NavBar from './components/navbar'
+import NavBar from './components/NavBar'
 import PropTypes from 'prop-types';
 
 //creating main App component that sets up the structure of the app and defines the routes for different pages
