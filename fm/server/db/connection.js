@@ -1,7 +1,10 @@
 import mysql from "mysql2/promise";
 import process from "process";
 
-//asynchronous function to connect the DB to the app
+/**
+ * Connects to MySQL.
+ * @returns {Promise<import("mysql2/promise").Connection>} Active DB connection.
+ */
 export async function connectDB() {
   //declaring the variable that'll store the connection object
   let db;

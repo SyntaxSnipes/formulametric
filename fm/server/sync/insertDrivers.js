@@ -3,7 +3,12 @@ import {
   fetchDriverStandings,
 } from "../services/jolpica.service.js";
 
-//asynchronous function to insert all drivers for a season into the database
+/**
+ * Inserts or updates all season drivers.
+ * @param {import("mysql2/promise").Connection} db Database connection.
+ * @param {number} year Season year.
+ * @returns {Promise<Record<string, number>>} API-to-DB driver map.
+ */
 export async function insertAllDrivers(db, year) {
   //fetching the drivers for the season from the API
   const drivers = (await fetchDrivers(year)) ?? [];

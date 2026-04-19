@@ -1,10 +1,21 @@
 import express from "express";
 
+/**
+ * Builds the drivers API router.
+ * @param {import("mysql2/promise").Connection} db Database connection.
+ * @param {() => Promise<void>} updateDB Trigger for sync updates.
+ * @returns {import("express").Router} Drivers router instance.
+ */
 export function createDriversRouter(db, updateDB) {
   //create expres router for drivers route, handing all rqs to this router
   const router = express.Router();
 
-  //GET route to fetch all drivers and info for a given season
+  /**
+   * Returns all drivers and season metrics for a year.
+   * @param {import("express").Request} req Express request.
+   * @param {import("express").Response} res Express response.
+   * @returns {Promise<void>} JSON response.
+   */
   router.get("/:season", async (req, res) => {
     await updateDB(); //calling updateDB to ensure latest data is fetched
     const seasonYear = req.params.season; //extracting season year from route params
@@ -40,8 +51,12 @@ export function createDriversRouter(db, updateDB) {
     }
   });
 
-
-  //GET route to fetch driver info for list of driver IDs, used in driver comparison
+  /**
+   * Returns selected drivers and race-by-race data.
+   * @param {import("express").Request} req Express request.
+   * @param {import("express").Response} res Express response.
+   * @returns {Promise<void>} JSON response.
+   */
   router.get("/:season/:driverIds", async (req, res) => {
     const seasonYear = req.params.season; //extracting season year from route params
 

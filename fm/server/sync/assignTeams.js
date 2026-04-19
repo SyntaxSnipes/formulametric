@@ -1,6 +1,12 @@
 import { fetchConstructorsForDriver } from "../services/jolpica.service.js";
 
-//asynchronous function to assign teams to drivers
+/**
+ * Assigns team relationships for season drivers.
+ * @param {import("mysql2/promise").Connection} db Database connection.
+ * @param {number} year Season year.
+ * @param {Record<string, number>} driverMap API-to-DB driver map.
+ * @returns {Promise<Record<number, number|null>>} Driver-to-teammate map.
+ */
 export async function assignTeams(db, year, driverMap) {
   const teamDrivers = {}; //creating object to store the team-driver relationships
 

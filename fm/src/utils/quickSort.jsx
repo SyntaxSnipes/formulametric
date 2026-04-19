@@ -7,7 +7,13 @@ const mappingDict = {
   Pr: "PRelative",
 };
 
-//quickSort function to sort an array of driver objects based on the selected sort factor and order using the quicksort algorithm
+/**
+ * Sorts drivers by selected metric using quicksort.
+ * @param {Array<Record<string, any>>} array Driver array.
+ * @param {"Pagg"|"Pc"|"Pt"|"Pa"|"Pr"} selectedSortFactor Metric key.
+ * @param {"asc"|"desc"} sortOrder Sort direction.
+ * @returns {Array<Record<string, any>>} Sorted driver array.
+ */
 export default function quickSort(array, selectedSortFactor, sortOrder) {
   if (array.length <= 1) { //base case if the array has 0 or 1 elements, it's sorted so return
     return array;

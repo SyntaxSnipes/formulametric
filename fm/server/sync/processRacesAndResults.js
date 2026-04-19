@@ -1,6 +1,12 @@
 import { fetchRaces, fetchResults } from "../services/jolpica.service.js"
 
-//asynchronous function to process all races and the results for a given season and drivers
+/**
+ * Syncs races and race results for a season.
+ * @param {import("mysql2/promise").Connection} db Database connection.
+ * @param {number} year Season year.
+ * @param {Record<string, number>} driverMap API-to-DB driver map.
+ * @returns {Promise<void>} Completes race/result sync.
+ */
 export async function processRacesAndResults(db, year, driverMap) {
   const races = await fetchRaces(year) //fetching all the drivers for that year
 

@@ -6,7 +6,11 @@ import { calculateAllMetrics } from "./calculateMetrics.js"
 
 let isUpdating = false //flag to prevent concurrent updates, ensuring only one update process runs at a time
 
-//asynchronous function to update the database with the latest data from the API for each season
+/**
+ * Updates DB state across configured seasons.
+ * @param {import("mysql2/promise").Connection} db Database connection.
+ * @returns {Promise<void>} Completes update cycle.
+ */
 export async function updateDB(db) {
   //if an update is already in progress, log message and skip to prevent concurrent updates
   if (isUpdating) {

@@ -3,7 +3,12 @@ import { eBackoffRetry } from "../utils/retry.js"; //helper function to handle r
 
 const BASEURL = "https://api.jolpi.ca/ergast/f1" //base URL for everything from Jolpica
 
-//helper function to make GET reqs to Jolpica, based on eBackoffRetry
+/**
+ * Performs a Jolpica GET request with retry on 429.
+ * @param {string} url Request URL.
+ * @param {number} [maxRetries=10] Max retry attempts.
+ * @returns {Promise<import("axios").AxiosResponse>} HTTP response.
+ */
 async function jolpicaGet(url, maxRetries = 10) {
     try {
         //if the request succeeds, return the response
@@ -22,37 +27,64 @@ async function jolpicaGet(url, maxRetries = 10) {
     }
 }
 
-//function to fetch the Races for a given season
+/**
+ * Fetches all races for a season.
+ * @param {number} year Season year.
+ * @returns {Promise<Array<any>>} Race list.
+ */
 export async function fetchRaces(year) {
     const res = await jolpicaGet(`${BASEURL}/${year}/races.json`)
     return res.data?.MRData?.RaceTable?.Races ?? []; //return empty array if fails
 }
 
-//function to fetch the Drivers for a given season
+/**
+ * Fetches all drivers for a season.
+ * @param {number} year Season year.
+ * @returns {Promise<Array<any>>} Driver list.
+ */
 export async function fetchDrivers(year) {
     const res = await jolpicaGet(`${BASEURL}/${year}/drivers.json`)
     return res.data?.MRData?.DriverTable?.Drivers ?? []; //return empty array if fails
 } 
 
-//function to fetch the Constructors for a given season
+/**
+ * Fetches season driver standings.
+ * @param {number} year Season year.
+ * @returns {Promise<Array<any>>} Standings list.
+ */
 export async function fetchDriverStandings(year) {
     const res = await jolpicaGet(`${BASEURL}/${year}/driverStandings.json`)
     return res.data?.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings ?? []; //return empty array if fails
 }
 
-//function to fetch the Constructors for a given driver in a given season
+/**
+ * Fetches constructors used by a driver in a season.
+ * @param {number} year Season year.
+ * @param {string} apiDriverId API driver identifier.
+ * @returns {Promise<Array<any>>} Constructor list.
+ */
 export async function fetchConstructorsForDriver(year, apiDriverId) {
     const res = await jolpicaGet(`${BASEURL}/${year}/drivers/${apiDriverId}/constructors.json`)
     return res.data?.MRData?.ConstructorTable?.Constructors ?? [] //return empty array if fails
 }
 
-//function to fetch the standings data for a given driver in a given season
+/**
+ * Fetches one driver's season standings row.
+ * @param {number} year Season year.
+ * @param {string} apiDriverId API driver identifier.
+ * @returns {Promise<any|null>} Driver standings entry.
+ */
 export async function fetchStandingsForDriver(year, apiDriverId) {
     const res = await jolpicaGet(`${BASEURL}/${year}/drivers/${apiDriverId}/driverStandings.json`)
     return res.data?.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings?.[0] ?? null //return null if fails
 }
 
-//function to fetch the results data for a given season and round/race
+/**
+ * Fetches race results for a season round.
+ * @param {number} year Season year.
+ * @param {number|string} round Round number.
+ * @returns {Promise<any|null>} Race payload.
+ */
 export async function fetchResults(year, round) {
     const res = await jolpicaGet(`${BASEURL}/${year}/${round}/results.json`)
     return res.data?.MRData?.RaceTable?.Races?.[0] ?? null //return null if fails

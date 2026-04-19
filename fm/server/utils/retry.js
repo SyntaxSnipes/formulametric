@@ -1,6 +1,13 @@
 import { sleep } from './sleep.js'
 
-//asynchronous function to perform an exponential backoff retry for a given function and parameters
+/**
+ * Retries a function with exponential backoff for 429 errors.
+ * @param {() => Promise<any>} func Function to retry.
+ * @param {boolean} is429 Whether the last error was 429.
+ * @param {number} cRetry Current retry count.
+ * @param {number} mRetry Max retry count.
+ * @returns {Promise<any|undefined>} Function result or undefined.
+ */
 export async function eBackoffRetry(func, is429, cRetry, mRetry) {
   let sleepAmt = 500; //default sleep amount of 500ms, further retries will exponentially increase this amount
   sleepAmt = 2 ** cRetry * 500; //exponential backoff calculation, doubling the sleep amount with each retry

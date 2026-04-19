@@ -8,7 +8,13 @@ import {
   calculatePt,
 } from "../metrics/index.js";
 
-//asynchronous function calculate all metrics for all drivers in a season, filtering out any non-racing statuses for fairness.
+/**
+ * Calculates and persists all metrics for a season.
+ * @param {import("mysql2/promise").Connection} db Database connection.
+ * @param {number} year Season year.
+ * @param {Record<number, number|null>} teamMap Driver-to-teammate map.
+ * @returns {Promise<void>} Completes metric updates.
+ */
 export async function calculateAllMetrics(db, year, teamMap) {
   //fetching the points for all drivers in the season to calculate mean and std deviation for PaZ calculation
   const pointsList = [];

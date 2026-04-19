@@ -1,4 +1,8 @@
-//Sleep function to cause a temporary pause in code execution, necessary for the other utils algo
+/**
+ * Sleeps for a given number of milliseconds.
+ * @param {number} ms Delay duration in ms.
+ * @returns {Promise<void>} Resolves after the delay.
+ */
 export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

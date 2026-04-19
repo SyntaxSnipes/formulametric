@@ -1,6 +1,11 @@
 import { fetchRaces } from "../services/jolpica.service.js"
 
-//asynchronous function to check if the season data is complete
+/**
+ * Checks whether season data is complete.
+ * @param {import("mysql2/promise").Connection} db Database connection.
+ * @param {number} year Season year.
+ * @returns {Promise<boolean>} True when season data is complete.
+ */
 export async function isSeasonDataComplete(db, year) {
   try {
     const racesFromAPI = await fetchRaces(year) || []; //fetching the races from the API for the given year
