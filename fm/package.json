@@ -24,7 +24,7 @@
     "dotenv": "^17.1.0",
     "express": "^5.1.0",
     "framer-motion": "^12.23.12",
-    "mathjs": "^14.0.1",
+    "mathjs": "^15.2.0",
     "mysql2": "^3.11.5",
     "node-cron": "^4.2.0",
     "plotly.js": "^3.0.1",

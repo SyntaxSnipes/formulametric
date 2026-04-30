@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+import { Link, useMatch, useResolvedPath } from "react-router-dom"
 //creating CustomLink component to create navigation links in the NavBar, using React Router to determine if the link is active and apply appropriate styling
 export default function CustomLink({ to, children, ...props }) {
   const resolvedPath = useResolvedPath(to)
