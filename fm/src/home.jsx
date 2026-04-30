@@ -1,6 +1,7 @@
 import "./styles/index.css"; //importing base styles
 
 import PropTypes from "prop-types";
+import CustomLink from "./components/customLink";
 import fmlogo from "/fmicon.svg";
 import { Link, useMatch, useResolvedPath } from "react-router-dom";
 
@@ -45,21 +46,3 @@ function Home() {
 
 export default Home;
 
-//creating CustomLink component to handle active link styling in the navigation bar
-function CustomLink({ to, children, ...props }) {
-  const resolvedPath = useResolvedPath(to);
-  const isActive = useMatch({ path: resolvedPath.pathname, end: true });
-
-  return (
-    <li className={isActive ? "active" : ""}>
-      <Link to={to} {...props}>
-        {children}
-      </Link>
-    </li>
-  );
-}
-
-CustomLink.propTypes = {
-  to: PropTypes.string.isRequired,
-  children: PropTypes.node.isRequired,
-};

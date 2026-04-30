@@ -2,6 +2,7 @@ import './styles/index.css' //importing base styles
 //importing necessary modules and components for the app, including React Router for routing between pages
 import { Route, Routes } from 'react-router-dom'
 import { Link, useMatch, useResolvedPath } from "react-router-dom"
+import CustomLink from './components/customLink'
 
 //importing all the pages and compoenents used in the app, as well as PropTypes for type checking
 import Home from './home'
@@ -25,26 +26,6 @@ function App() {
     </div>
   )
 }
-
-//creating CustomLink component to create navigation links in the NavBar, using React Router to determine if the link is active and apply appropriate styling
-function CustomLink({ to, children, ...props }) {
-  const resolvedPath = useResolvedPath(to)
-  const isActive = useMatch({ path: resolvedPath.pathname, end: true })
-
-  return (
-    <li className={isActive ? "active" : ""}>
-      <Link to={to} {...props}>
-        {children}
-      </Link>
-    </li>
-  )
-}
-
-//defining PropTypes for the CustomLink component to ensure that the 'to' prop is a string and the 'children' prop is a valid React node
-CustomLink.propTypes = {
-  to: PropTypes.string.isRequired,
-  children: PropTypes.node.isRequired 
-};
 
 //exporting the App component as the default export of the module
 export default App
