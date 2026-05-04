@@ -1,4 +1,5 @@
 import express from "express";
+import { makeMinHeap, generateTop3 } from "../utils/priorityQueue.js";
 
 /**
  * Builds the drivers API router.
@@ -9,6 +10,48 @@ import express from "express";
 export function createDriversRouter(db, updateDB) {
   //create expres router for drivers route, handing all rqs to this router
   const router = express.Router();
+
+  /**
+   * Returns the top 3 drivers by aggregate score for a season.
+   * @param {import("express").Request} req Express request.
+   * @param {import("express").Response} res Express response.
+   * @returns {Promise<void>} JSON response with top 3 drivers.
+   */
+  router.get("/:season/top3", async (req, res) => {
+    await updateDB(); //calling updateDB to ensure latest data is fetched
+    const seasonYear = req.params.season; //extracting season year from route params
+
+    //query to fetch driver info and metrics for the season, joining necessary tables to get team names
+    try {
+      const [rows] = await db.query(
+        `
+      SELECT d.DriverID, d.FirstName, d.LastName, d.Country, d.RacingNumber, 
+            pm.PConsistency, pm.PTrajectory, pm.PAbsolute, pm.PRelative, pm.PAggregate,
+            t.TeamName
+      FROM Drivers d
+      JOIN PerformanceMetrics pm ON d.DriverID = pm.DriverID
+      JOIN Seasons s ON s.SeasonID = pm.SeasonID
+      JOIN Teams t ON 
+        t.SeasonID = s.SeasonID AND 
+        (
+          d.DriverID = t.Teammate1_ID OR 
+          d.DriverID = t.Teammate2_ID OR 
+          d.DriverID = t.AdditionalDriver1_ID OR 
+          d.DriverID = t.AdditionalDriver2_ID
+        )
+      WHERE s.Year = ?
+      ORDER BY d.RacingNumber ASC
+    `,
+        [seasonYear],
+      );
+      const mHeap = makeMinHeap(rows);
+      const top3 = generateTop3(mHeap);
+      res.json(top3); //return fetched data as JSON
+    } catch (err) {
+      console.error("Error fetching driver data:", err);
+      res.status(500).json({ error: "Failed to fetch driver data" });
+    }
+  });
 
   /**
    * Returns all drivers and season metrics for a year.
@@ -112,6 +155,5 @@ export function createDriversRouter(db, updateDB) {
       res.status(500).json({ error: "Failed to fetch driver data" });
     }
   });
-  // return router to be used in index.js (page 51)
   return router;
 }

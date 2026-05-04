@@ -1,4 +1,4 @@
-import CustomLink from "./customLink";
+import CustomLink from "./CustomLink";
 import fmlogo from "/fmicon.svg";
 
 //creating NavBar component to display the navigation bar with links to different pages of the application

@@ -37,7 +37,6 @@ function Rankings() {
       });
   }, [year]);
 
-
   //useMemo to memoize the sorted drivers list so that it only recomputes when the drivers data, selected sort factor, or sort order changes
   const sortedDrivers = useMemo(() => {
     if (!drivers.length) return [];
@@ -87,11 +86,11 @@ function Rankings() {
                         <div className="flex gap-3 items-center text-white">
             <span className="text-[#ff1e00]">Sort by:</span>
             {[
-              { label: "Pc", value: "Pc" },
-              { label: "Pt", value: "Pt" },
-              { label: "Pa", value: "Pa" },
-              { label: "Pr", value: "Pr" },
-              { label: "Pagg", value: "Pagg" },
+              { label: "Consistency Score", value: "Pc" },
+              { label: "Trajectory Score", value: "Pt" },
+              { label: "Absolute Score", value: "Pa" },
+              { label: "Relative Score", value: "Pr" },
+              { label: "Aggregate Score", value: "Pagg" },
             ].map((item) => (
               <button
                 key={item.value}
