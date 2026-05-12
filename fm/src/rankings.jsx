@@ -20,11 +20,11 @@ function Rankings() {
   const [loading, setLoading] = useState(true);  //state to track whether the data is still loading, used to show a loading screen while fetching data
   const [selectedSortFactor, setSelectedSortFactor] = useState("Pagg"); //state to hold the selected factor by which the drivers will be sorted, default is "Pagg"
   const [sortOrder, setSortOrder] = useState("desc"); //state to hold the selected sort order (asc or desc) for sorting the drivers, default is desc
-
+  const PORT = process.env.PORT || 5000;
   //whenever the year changes, load the driver data and store in in drivers state
   useEffect(() => {
     setLoading(true); //set loading to true whenever the year changes or the page is refreshed
-    fetch(`http://localhost:5000/api/drivers/${year}`)
+    fetch(`http://localhost:${PORT}/api/drivers/${year}`)
       .then((res) => res.json())
       .then((data) => {
         setDrivers(data);

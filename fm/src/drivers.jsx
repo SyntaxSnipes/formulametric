@@ -16,7 +16,7 @@ function Drivers() {
   const [drivers, setDrivers] = useState([]);
   const [year, setYear] = useState("2025");
   const [loading, setLoading] = useState(true);
-
+  const PORT = process.env.PORT || 5000;
   //whenever the year changes, set the selectedDrivers list to empty array
   useEffect(() => {
     setSelectedDrivers([]);
@@ -25,7 +25,7 @@ function Drivers() {
   //whenever the year changes, load the driver data and store in in state
   useEffect(() => {
     setLoading(true); //set loading to true whenever the year changes or the page is refreshed
-    fetch(`http://localhost:5000/api/drivers/${year}`) //fetching driver data for the selected year from the backend
+    fetch(`http://localhost:${PORT}/api/drivers/${year}`) //fetching driver data for the selected year from the backend
       .then((res) => res.json())
       .then((data) => {
         setDrivers(data); //set fetched data into drivers state

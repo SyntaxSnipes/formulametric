@@ -1,10 +1,6 @@
 import "./styles/index.css"; //importing base styles
-
-import PropTypes from "prop-types";
 import CustomLink from "./components/CustomLink";
-import fmlogo from "/fmicon.svg";
 import DriverPodium from "./components/DriverPodium";
-import { Link, useMatch, useResolvedPath } from "react-router-dom";
 
 //creating Home component to display the landing page of the app with an introduction and features list
 function Home() {

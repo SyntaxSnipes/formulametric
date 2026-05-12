@@ -8,9 +8,19 @@ import cors from "cors";
 const app = express();
 
 //setting up CORS for front-end and back-end to work better.
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://formulametric.com",
+  "https://www.formulametric.com",
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+    else callback(new Error("Not allowed by CORS"));
+  }
+}));
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 import { connectDB } from "./db/connection.js"; //page 51
 import { updateDB } from "./sync/updateDB.js"; //

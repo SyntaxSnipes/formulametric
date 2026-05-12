@@ -4,8 +4,9 @@ import DriverMetrics from "./DriverMetrics";
 import DriverResultsList from "./DriverResultsList";
 
 async function fetchDriverData(year, driverID) {
+  const PORT = process.env.PORT || 5000;
   const res = await fetch(
-    `http://localhost:5000/api/drivers/${year}/${driverID}`,
+    `http://localhost:${PORT}/api/drivers/${year}/${driverID}`,
   ); //fetch request to backend for driver
   const data = await res.json();
   console.log("API response for driver details:", data);
