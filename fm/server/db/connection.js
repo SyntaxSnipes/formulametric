@@ -17,7 +17,7 @@ export async function connectDB() {
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       port: process.env.DB_PORT || 3306,
-      ssl: { rejectUnauthorized: true },
+      ssl: { rejectUnauthorized: false },
     });
     console.log("Database Connected.");
     return db; //returning the connection object
