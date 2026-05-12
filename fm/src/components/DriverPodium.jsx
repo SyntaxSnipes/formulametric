@@ -9,11 +9,10 @@ import DriverPodiumCard from "./DriverPodiumCard";
 function DriverPodium() {
   const [drivers, setDrivers] = useState([]); //state to hold the driver data fetched from the backend
   const [loading, setLoading] = useState(true); //state to track whether the data is still loading, used to show a loading screen while fetching data
-  const PORT = process.env.PORT || 5000;
   //whenever the year changes, load the driver data and store in in drivers state
   useEffect(() => {
     setLoading(true); //set loading to true whenever the year changes or the page is refreshed
-    fetch(`http://localhost:${PORT}/api/drivers/2025/top3`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/drivers/2025/top3`)
       .then((res) => res.json())
       .then((data) => {
         setDrivers(data);

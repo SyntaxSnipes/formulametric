@@ -20,8 +20,6 @@ app.use(cors({
   }
 }));
 
-const PORT = process.env.PORT || 5000;
-
 import { connectDB } from "./db/connection.js"; //page 51
 import { updateDB } from "./sync/updateDB.js"; //
 
@@ -35,6 +33,6 @@ app.use(
 );
 
 //start express server on defined port
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server running on http://localhost:${process.env.PORT}`);
 });
