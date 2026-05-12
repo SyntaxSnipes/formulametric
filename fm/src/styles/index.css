@@ -1,0 +1,71 @@
+:root {
+  font-family: "Titillium Web", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #141418;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#root {
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  box-sizing: border-box !important;
+}
+
+html ::-webkit-scrollbar, body ::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* EXAMPLE styles to drop in index.css */
+:root{
+  --bg:#141418;
+  --primary:#ff1e00;
+  --text:#ffffff;
+  --muted:#9ca3af;
+}
+
+.bg-grid {
+  background-image:
+    radial-gradient(1200px 600px at 50% -10%, rgba(255,30,0,.12), transparent 60%),
+    linear-gradient(to bottom, rgba(255,255,255,.02), transparent 40%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><path d='M0 31.5H32M31.5 0V32' stroke='rgba(255,255,255,0.06)'/></svg>");
+  background-size: cover, cover, 32px 32px;
+}
+.card {
+  backdrop-filter: blur(6px);
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 10px;
+  padding: .9rem 1.4rem;
+  transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(255,30,0,.25); background:#e01b00; }
+.btn-ghost {
+  border: 1px solid rgba(255,255,255,.14);
+  color:#fff; border-radius:10px; padding:.9rem 1.4rem;
+}
