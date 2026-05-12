@@ -80,13 +80,19 @@ export default function DriverScore({ year, selectedDrivers }) {
       console.log(dataA.races[`driver${driverA.DriverID}`]);
       setRacesA(racesDataA);
       if (driverB && driverB.DriverID) {
-        const [dataB, racesDataB] = await fetchDriverData(year, driverB.DriverID); //fetching the race results for driver B using the fetchDriverData function
+        const [dataB, racesDataB] = await fetchDriverData(
+          year,
+          driverB.DriverID,
+        ); //fetching the race results for driver B using the fetchDriverData function
         setResultsB(dataB.races[`driver${driverB.DriverID}`] || []); //setting the results state for driver to the fetched data, empty array if no data found
         console.log(dataB.races[`driver${driverB.DriverID}`]);
         setRacesB(racesDataB);
       }
       if (driverC && driverC.DriverID) {
-        const [dataC, racesDataC] = await fetchDriverData(year, driverC.DriverID); //fetching the race results for driver C using the fetchDriverData function
+        const [dataC, racesDataC] = await fetchDriverData(
+          year,
+          driverC.DriverID,
+        ); //fetching the race results for driver C using the fetchDriverData function
         setResultsC(dataC.races[`driver${driverC.DriverID}`] || []); //setting the results state for driver to the fetched data, empty array if no data found
         console.log(dataC.races[`driver${driverC.DriverID}`]);
         setRacesC(racesDataC);
@@ -96,118 +102,155 @@ export default function DriverScore({ year, selectedDrivers }) {
   }, [selectedDrivers, year]);
 
   //computing the max number of races across all selected drivers, used for the x-axis of the line chart
-  const maxRaces = Math.max(racesA?.length || 0, racesB?.length || 0, racesC?.length || 0);
+  const maxRaces = Math.max(
+    racesA?.length || 0,
+    racesB?.length || 0,
+    racesC?.length || 0,
+  );
 
   //checking if there are any selected drivers to display
   const hasDrivers = selectedDrivers && selectedDrivers.length > 0;
 
+  //shared props for both mobile and desktop line charts
+  const sharedProps = {
+    series: [
+      {
+        data: racesA.map((race) => race?.Position ?? null),
+        curve: "linear",
+        label: driverA?.LastName,
+        color: "#ff1e00",
+      },
+      {
+        data: racesB.map((race) => race?.Position ?? null),
+        curve: "linear",
+        label: driverB?.LastName,
+        color: "#0057b8",
+      },
+      {
+        data: racesC.map((race) => race?.Position ?? null),
+        curve: "linear",
+        label: driverC?.LastName,
+        color: "#ffd700",
+      },
+    ],
+    xAxis: [
+      {
+        data: Array.from({ length: maxRaces }, (_, i) => i + 1),
+        tickNumber: maxRaces,
+        label: chartWidth < 500 ? "" : "Races",
+        labelStyle: {
+          fill: "#ff1e00",
+          fontWeight: "bold",
+          fontFamily: "Titillium Web, sans-serif",
+          fontSize: 14,
+        },
+        tickLabelStyle: {
+          fill: "#ffffff",
+          fontFamily: "Titillium Web, sans-serif",
+          fontSize: 12,
+        },
+      },
+    ],
+    yAxis: [
+      {
+        reverse: true,
+        max:
+          Math.max(
+            ...racesA.map((r) => r?.Position ?? 0),
+            ...racesB.map((r) => r?.Position ?? 0),
+            ...racesC.map((r) => r?.Position ?? 0),
+          ) + 1,
+        min: 1,
+        label: chartWidth < 500 ? "" : "Race Position",
+        labelStyle: {
+          fill: "#ff1e00",
+          fontWeight: 600,
+          fontSize: 10,
+        },
+        tickLabelStyle: {
+          fill: "#ffffff",
+          fontFamily: "Titillium Web, sans-serif",
+          fontSize: 9,
+        },
+      },
+    ],
+    grid: { vertical: true, horizontal: true },
+    width: chartWidth,
+    height: chartWidth < 500 ? 250 : 450,
+    sx: {
+      backgroundColor: "#141418",
+      fontFamily: "'Titillium Web', sans-serif",
+      padding: 0,
+      margin: 0,
+      // axis labels
+      "& .MuiChartsAxis-label": {
+        fill: "#ff1e00",
+        fontWeight: 600,
+        fontSize: 12,
+      },
+      // tick labels
+      "& .MuiChartsAxis-tickLabel": {
+        fill: "#ffffff",
+        fontWeight: 400,
+        fontSize: 10,
+      },
+      // grid lines
+      "& .MuiChartsGrid-line": { stroke: "#333333", strokeDasharray: "4 4" },
+      // legend styles
+      "& .MuiChartsLegend-root": {
+        color: "#ffffff",
+        fontFamily: "'Titillium Web', sans-serif",
+      },
+      "& .MuiChartsLegend-series text": { fill: "#ffffff", fontWeight: 600 },
+    },
+    slotProps: { legend: { hidden: false } },
+    legend: {
+      direction: "row",
+      position: { vertical: "bottom", horizontal: "middle" },
+      itemMarkWidth: 20,
+      itemMarkHeight: 10,
+      padding: 8,
+    },
+  };
+
   return (
     //main container for the DriverScore component, always mounted so the chart container ref is always available
-    <div className="flex flex-col my-15 align-center z-1">
+    <div className="flex flex-col my-4 sm:my-15 align-center z-1">
       {hasDrivers && (
         <>
-          {/*Displays the first name of the selected drivers*/}
+          {/*Displays the names of the selected drivers*/}
           <h2 className="text-2xl sm:text-4xl text-[#ff1e00] text-center py-6 sm:py-10">
             Statistics for drivers: {driverA?.FirstName} {driverA?.LastName}
             {driverB ? `, ${driverB.FirstName} ${driverB.LastName}` : ""}
             {driverC ? `, ${driverC.FirstName} ${driverC.LastName}` : ""}
           </h2>
+
           {/*Container for the line chart and metrics display*/}
           <div className="flex flex-col lg:flex-row gap-5 items-center w-full">
             {/*Line chart to display the race positions for the selected drivers across the season*/}
             <div
-              className="w-full lg:flex-[3]"
+              className="w-full lg:flex-[3] overflow-hidden"
               ref={setChartContainerNode}
             >
-              <LineChart
-                series={[
-                  {
-                    data: racesA.map((race) => race?.Position ?? null),
-                    curve: "linear",
-                    label: driverA?.LastName,
-                    color: "#ff1e00",
-                  },
-                  {
-                    data: racesB.map((race) => race?.Position ?? null),
-                    curve: "linear",
-                    label: driverB?.LastName,
-                    color: "#0057b8",
-                  },
-                  {
-                    data: racesC.map((race) => race?.Position ?? null),
-                    curve: "linear",
-                    label: driverC?.LastName,
-                    color: "#ffd700",
-                  },
-                ]}
-                // configuring the x and y axes for the line chart
-                slotProps={{
-                  legend: { hidden: false },
-                }}
-                xAxis={[
-                  {
-                    data: Array.from({ length: maxRaces }, (_, i) => i + 1),
-                    tickNumber: maxRaces,
-                    label: chartWidth < 500 ? "" : "Races",
-                    labelStyle: {
-                      fill: "#ff1e00",
-                      fontWeight: "bold",
-                      fontFamily: "Titillium Web, sans-serif",
-                      fontSize: 14,
-                    },
-                    tickLabelStyle: {
-                      fill: "#ffffff",
-                      fontFamily: "Titillium Web, sans-serif",
-                      fontSize: 12,
-                    },
-                  },
-                ]}
-                yAxis={[
-                  {
-                    reverse: true,
-                    max: 20,
-                    min: 1,
-                    label: chartWidth < 500 ? "" : "Race Position",
-                    labelStyle: {
-                      fill: "#ff1e00",
-                      fontWeight: 600,
-                      fontSize: 10,
-                    },
-                    tickLabelStyle: {
-                      fill: "#ffffff",
-                      fontFamily: "Titillium Web, sans-serif",
-                      fontSize: 9,
-                    },
-                  },
-                ]}
-                grid={{ vertical: true, horizontal: true }}
-                margin={{ top: 5, bottom: 30, left: 30, right: 5 }}
-                width={chartWidth}
-                height={chartWidth < 500 ? 250 : 450}
-                sx={{
-                  backgroundColor: "#141418",
-                  fontFamily: "'Titillium Web', sans-serif",
-                  padding: 0,
-                  margin: 0,
-                  // axis labels
-                  "& .MuiChartsAxis-label": { fill: "#ff1e00", fontWeight: 600, fontSize: 12 },
-                  // tick labels (x and y)
-                  "& .MuiChartsAxis-tickLabel": { fill: "#ffffff", fontWeight: 400, fontSize: 10 },
-                  // grid lines
-                  "& .MuiChartsGrid-line": { stroke: "#333333", strokeDasharray: "4 4" },
-                  // legend styles
-                  "& .MuiChartsLegend-root": { color: "#ffffff", fontFamily: "'Titillium Web', sans-serif" },
-                  "& .MuiChartsLegend-series text": { fill: "#ffffff", fontWeight: 600 },
-                }}
-                legend={{
-                  direction: "row",
-                  position: { vertical: "bottom", horizontal: "middle" },
-                  itemMarkWidth: 20,
-                  itemMarkHeight: 10,
-                  padding: 8,
-                }}
-              />
+              {chartWidth < 500 ? (
+                <LineChart
+                  {...sharedProps}
+                  leftAxis={null}
+                  width={chartWidth + 30}
+                  margin={{ top: 5, bottom: 5, left: 0, right: 20 }}
+                  sx={{
+                    ...sharedProps.sx,
+                    marginLeft: "-25px",
+                  }}
+                />
+              ) : (
+                <LineChart
+                  {...sharedProps}
+                  margin={{ top: 5, bottom: 30, left: 30, right: 5 }}
+                />
+              )}
             </div>
+
             {/*Display of the performance metrics for the selected drivers using MetricGauge components, with conditional rendering based on the number of selected drivers*/}
             <div className="flex flex-col gap-4 w-full lg:flex-[2]">
               <DriverMetrics driver={driverA} />
@@ -218,14 +261,23 @@ export default function DriverScore({ year, selectedDrivers }) {
 
           {/*Displaying the race results for the selected drivers in a list format, with conditional rendering based on the number of selected drivers*/}
           <div className="flex flex-col gap-4 my-4 w-full">
-            <DriverResultsList results={resultsA} driverName={driverA?.LastName} />
+            <DriverResultsList
+              results={resultsA}
+              driverName={driverA?.LastName}
+            />
             {driverB ? (
-              <DriverResultsList results={resultsB} driverName={driverB?.LastName} />
+              <DriverResultsList
+                results={resultsB}
+                driverName={driverB?.LastName}
+              />
             ) : (
               <></>
             )}
             {driverC ? (
-              <DriverResultsList results={resultsC} driverName={driverC?.LastName} />
+              <DriverResultsList
+                results={resultsC}
+                driverName={driverC?.LastName}
+              />
             ) : (
               <></>
             )}

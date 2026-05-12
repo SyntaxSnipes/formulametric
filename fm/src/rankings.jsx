@@ -140,7 +140,7 @@ function Rankings() {
             />
             <h1 className="text-3xl text-[#ff1e00]">Loading data...</h1>
 
-            {/*F1 start lights - 5 columns, 2 lights each, illuminate column by column*/}
+            {/*F1 start lights - 5 columns, 2 lights each, illuminate one by one then go dark simultaneously*/}
             <div className="flex flex-row gap-2 bg-[#0a0a0a] px-4 py-4 rounded-lg border-2 border-[#2a2a2a]">
               {[0, 1, 2, 3, 4].map((col) => (
                 <div
@@ -152,8 +152,7 @@ function Rankings() {
                       key={row}
                       className="w-10 h-10 rounded-full border-2 border-[#2a2a2a]"
                       style={{
-                        animation: `start-light 2.5s ease-in-out infinite`,
-                        animationDelay: `${col * 0.4}s`,
+                        animation: `start-light-${col} 3s ease-in-out infinite`,
                       }}
                     />
                   ))}
@@ -162,12 +161,19 @@ function Rankings() {
             </div>
 
             <style>{`
-    @keyframes start-light {
-      0%        { background: #1a0000; box-shadow: none; }
-      20%       { background: #ff1e00; box-shadow: 0 0 20px #ff1e00, 0 0 40px #ff1e0088; }
-      70%       { background: #ff1e00; box-shadow: 0 0 20px #ff1e00, 0 0 40px #ff1e0088; }
-      85%, 100% { background: #1a0000; box-shadow: none; }
-    }
+    ${[0, 1, 2, 3, 4]
+      .map((col) => {
+        const onAt = col * 10;
+        const offAt = 70;
+        return `
+        @keyframes start-light-${col} {
+          0%, ${onAt}%                    { background: #1a0000; box-shadow: none; }
+          ${onAt + 8}%, ${offAt - 2}%    { background: #ff1e00; box-shadow: 0 0 20px #ff1e00, 0 0 40px #ff1e0088; }
+          ${offAt}%, 100%                 { background: #1a0000; box-shadow: none; }
+        }
+      `;
+      })
+      .join("")}
   `}</style>
           </div>
         )}
