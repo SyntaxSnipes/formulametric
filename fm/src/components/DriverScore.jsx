@@ -29,10 +29,28 @@ async function fetchDriverData(year, driverID) {
 
 //creating DriverScore component to display the performance metrics alongside a line chart of results and a list of race results for the selected drivers in a given year
 export default function DriverScore({ year, selectedDrivers }) {
-  //creating state variables to store the results for the 3 seleced drivers
+  //creating state variables to store the results for the 3 selected drivers
   const [resultsA, setResultsA] = useState([]);
   const [resultsB, setResultsB] = useState([]);
   const [resultsC, setResultsC] = useState([]);
+
+  //creating state for the chart container node and width, used for responsive sizing
+  const [chartContainerNode, setChartContainerNode] = useState(null);
+  const [chartWidth, setChartWidth] = useState(500);
+
+  //whenever the chart container node changes, read its width and set up a ResizeObserver to update the width whenever the container resizes
+  useEffect(() => {
+    if (!chartContainerNode) return;
+    //read the width immediately on mount
+    setChartWidth(chartContainerNode.clientWidth);
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setChartWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(chartContainerNode);
+    return () => observer.disconnect();
+  }, [chartContainerNode]); //re-runs when the node actually appears
 
   //destructuring the selected drivers for easier access
   const [driverA, driverB, driverC] = selectedDrivers;
@@ -48,7 +66,6 @@ export default function DriverScore({ year, selectedDrivers }) {
     setResultsA([]);
     setResultsB([]);
     setResultsC([]);
-
     setRacesA([]);
     setRacesB([]);
     setRacesC([]);
@@ -63,19 +80,13 @@ export default function DriverScore({ year, selectedDrivers }) {
       console.log(dataA.races[`driver${driverA.DriverID}`]);
       setRacesA(racesDataA);
       if (driverB && driverB.DriverID) {
-        const [dataB, racesDataB] = await fetchDriverData(
-          year,
-          driverB.DriverID,
-        ); //fetching the race results for driver B using the fetchDriverData function
+        const [dataB, racesDataB] = await fetchDriverData(year, driverB.DriverID); //fetching the race results for driver B using the fetchDriverData function
         setResultsB(dataB.races[`driver${driverB.DriverID}`] || []); //setting the results state for driver to the fetched data, empty array if no data found
         console.log(dataB.races[`driver${driverB.DriverID}`]);
         setRacesB(racesDataB);
       }
       if (driverC && driverC.DriverID) {
-        const [dataC, racesDataC] = await fetchDriverData(
-          year,
-          driverC.DriverID,
-        ); //fetching the race results for driver C using the fetchDriverData function
+        const [dataC, racesDataC] = await fetchDriverData(year, driverC.DriverID); //fetching the race results for driver C using the fetchDriverData function
         setResultsC(dataC.races[`driver${driverC.DriverID}`] || []); //setting the results state for driver to the fetched data, empty array if no data found
         console.log(dataC.races[`driver${driverC.DriverID}`]);
         setRacesC(racesDataC);
@@ -84,152 +95,143 @@ export default function DriverScore({ year, selectedDrivers }) {
     fetchData();
   }, [selectedDrivers, year]);
 
-  if (!selectedDrivers || selectedDrivers.length === 0) return;
+  //computing the max number of races across all selected drivers, used for the x-axis of the line chart
+  const maxRaces = Math.max(racesA?.length || 0, racesB?.length || 0, racesC?.length || 0);
+
+  //checking if there are any selected drivers to display
+  const hasDrivers = selectedDrivers && selectedDrivers.length > 0;
 
   return (
-    //main container for the DriverScore component
+    //main container for the DriverScore component, always mounted so the chart container ref is always available
     <div className="flex flex-col my-15 align-center z-1">
-      {/*Displays the first name of the selected drivers*/}
-      <h2 className="text-4xl text-[#ff1e00] text-center py-10 flex flex-row">
-        Statistics for drivers: 
-        {driverA ? ` ${driverA.FirstName} ${driverA.LastName},` : ""} {driverB ? `${driverB.FirstName} ${driverB.LastName},` : ""} {driverC ? `${driverC.FirstName} ${driverC.LastName}` : ""}
-      </h2>
-
-      {/*Container for the line chart and metrics display*/}
-      <div className="flex flex-col items-center justify-center bg-[#15151e] text-[#ff1e00] p-4 rounded-lg border my-15 mx-5 gap-5">
-        <div className="flex flex-row gap-10">
-          {/*Line chart to display the race positions for the selected drivers across the season*/}
-          <LineChart
-            className="rounded-xl"
-            series={[
-              {
-                data: racesA.map((race) => race?.Position ?? null), //mapping the racesA data to extract the position for each round, using null if no data found for that round
-                curve: "linear",
-                label: driverA?.LastName,
-                color: "#ff1e00",
-              },
-              {
-                data: racesB.map((race) => race?.Position ?? null), //mapping the racesB data to extract the position for each round, using null if no data found for that round
-                curve: "linear",
-                label: driverB?.LastName,
-                color: "#0057b8",
-              },
-              {
-                data: racesC.map((race) => race?.Position ?? null), //mapping the racesC data to extract the position for each round, using null if no data found for that round
-                curve: "linear",
-                label: driverC?.LastName,
-                color: "#ffd700",
-              },
-            ]}
-            // configuring the x and y axes for the line chart
-            xAxis={[
-              {
-                data: Array.from(
+      {hasDrivers && (
+        <>
+          {/*Displays the first name of the selected drivers*/}
+          <h2 className="text-2xl sm:text-4xl text-[#ff1e00] text-center py-6 sm:py-10">
+            Statistics for drivers: {driverA?.FirstName} {driverA?.LastName}
+            {driverB ? `, ${driverB.FirstName} ${driverB.LastName}` : ""}
+            {driverC ? `, ${driverC.FirstName} ${driverC.LastName}` : ""}
+          </h2>
+          {/*Container for the line chart and metrics display*/}
+          <div className="flex flex-col lg:flex-row gap-5 items-center w-full">
+            {/*Line chart to display the race positions for the selected drivers across the season*/}
+            <div
+              className="w-full lg:flex-[3]"
+              ref={setChartContainerNode}
+            >
+              <LineChart
+                series={[
                   {
-                    length: Math.max(
-                      racesA?.length,
-                      racesB?.length,
-                      racesC?.length,
-                    ),
+                    data: racesA.map((race) => race?.Position ?? null),
+                    curve: "linear",
+                    label: driverA?.LastName,
+                    color: "#ff1e00",
                   },
-                  (_, i) => i + 1,
-                ),
-                tickNumber: Math.max(
-                  racesA?.length,
-                  racesB?.length,
-                  racesC?.length,
-                ),
-                label: "Races",
-                labelStyle: {
-                  fill: "#ff1e00", // Make axis title visible in red
-                  fontWeight: "bold",
-                  fontFamily: "Titillium Web, sans-serif",
-                  fontSize: 14,
-                },
-                tickLabelStyle: {
-                  fill: "#ffffff",
-                  fontFamily: "Titillium Web, sans-serif",
-                  fontSize: 12,
-                },
-              },
-            ]}
-            yAxis={[
-              {
-                reverse: true,
-                max: 20,
-                min: 1,
-                label: "Race Position",
-                labelStyle: {
-                  fill: "#ff1e00",
-                  fontWeight: "bold",
-                  fontFamily: "Titillium Web, sans-serif",
-                  fontSize: 14,
-                },
-                tickLabelStyle: {
-                  fill: "#ffffff",
-                  fontFamily: "Titillium Web, sans-serif",
-                  fontSize: 12,
-                },
-              },
-            ]}
-            grid={{ vertical: true, horizontal: true }}
-            width={700}
-            height={500}
-            sx={{
-              backgroundColor: "#141418",
-              fontFamily: "'Titillium Web', sans-serif",
-
-              // axis labels
-              "& .MuiChartsAxis-label": {
-                fill: "#ff1e00",
-                fontWeight: 600,
-              },
-
-              // tick labels (x and y)
-              "& .MuiChartsAxis-tickLabel": {
-                fill: "#ffffff",
-                fontWeight: 400,
-              },
-
-              // grid lines
-              "& .MuiChartsGrid-line": {
-                stroke: "#333333",
-                strokeDasharray: "4 4",
-              },
-
-              // legend styles
-              "& .MuiChartsLegend-root": {
-                color: "#ffffff",
-                fontFamily: "'Titillium Web', sans-serif",
-              },
-              "& .MuiChartsLegend-series text": {
-                fill: "#ffffff",
-                fontWeight: 600,
-              },
-            }}
-            legend={{
-              direction: "row",
-              position: { vertical: "bottom", horizontal: "middle" },
-              itemMarkWidth: 20,
-              itemMarkHeight: 10,
-              padding: 8,
-            }}
-          />
-          {/*Display of the performance metrics for the selected drivers using MetricGauge components, with conditional rendering based on the number of selected drivers*/}
-          <div className="flex flex-col gap-4">
-            <DriverMetrics driver={driverA} />
-            {driverB ? <DriverMetrics driver={driverB} /> : <></>}
-            {driverC ? <DriverMetrics driver={driverC} /> : <></>}
+                  {
+                    data: racesB.map((race) => race?.Position ?? null),
+                    curve: "linear",
+                    label: driverB?.LastName,
+                    color: "#0057b8",
+                  },
+                  {
+                    data: racesC.map((race) => race?.Position ?? null),
+                    curve: "linear",
+                    label: driverC?.LastName,
+                    color: "#ffd700",
+                  },
+                ]}
+                // configuring the x and y axes for the line chart
+                slotProps={{
+                  legend: { hidden: false },
+                }}
+                xAxis={[
+                  {
+                    data: Array.from({ length: maxRaces }, (_, i) => i + 1),
+                    tickNumber: maxRaces,
+                    label: chartWidth < 500 ? "" : "Races",
+                    labelStyle: {
+                      fill: "#ff1e00",
+                      fontWeight: "bold",
+                      fontFamily: "Titillium Web, sans-serif",
+                      fontSize: 14,
+                    },
+                    tickLabelStyle: {
+                      fill: "#ffffff",
+                      fontFamily: "Titillium Web, sans-serif",
+                      fontSize: 12,
+                    },
+                  },
+                ]}
+                yAxis={[
+                  {
+                    reverse: true,
+                    max: 20,
+                    min: 1,
+                    label: chartWidth < 500 ? "" : "Race Position",
+                    labelStyle: {
+                      fill: "#ff1e00",
+                      fontWeight: 600,
+                      fontSize: 10,
+                    },
+                    tickLabelStyle: {
+                      fill: "#ffffff",
+                      fontFamily: "Titillium Web, sans-serif",
+                      fontSize: 9,
+                    },
+                  },
+                ]}
+                grid={{ vertical: true, horizontal: true }}
+                margin={{ top: 5, bottom: 30, left: 30, right: 5 }}
+                width={chartWidth}
+                height={chartWidth < 500 ? 250 : 450}
+                sx={{
+                  backgroundColor: "#141418",
+                  fontFamily: "'Titillium Web', sans-serif",
+                  padding: 0,
+                  margin: 0,
+                  // axis labels
+                  "& .MuiChartsAxis-label": { fill: "#ff1e00", fontWeight: 600, fontSize: 12 },
+                  // tick labels (x and y)
+                  "& .MuiChartsAxis-tickLabel": { fill: "#ffffff", fontWeight: 400, fontSize: 10 },
+                  // grid lines
+                  "& .MuiChartsGrid-line": { stroke: "#333333", strokeDasharray: "4 4" },
+                  // legend styles
+                  "& .MuiChartsLegend-root": { color: "#ffffff", fontFamily: "'Titillium Web', sans-serif" },
+                  "& .MuiChartsLegend-series text": { fill: "#ffffff", fontWeight: 600 },
+                }}
+                legend={{
+                  direction: "row",
+                  position: { vertical: "bottom", horizontal: "middle" },
+                  itemMarkWidth: 20,
+                  itemMarkHeight: 10,
+                  padding: 8,
+                }}
+              />
+            </div>
+            {/*Display of the performance metrics for the selected drivers using MetricGauge components, with conditional rendering based on the number of selected drivers*/}
+            <div className="flex flex-col gap-4 w-full lg:flex-[2]">
+              <DriverMetrics driver={driverA} />
+              {driverB ? <DriverMetrics driver={driverB} /> : <></>}
+              {driverC ? <DriverMetrics driver={driverC} /> : <></>}
+            </div>
           </div>
-        </div>
 
-        {/*Displaying the race results for the selected drivers in a list format, with conditional rendering based on the number of selected drivers*/}
-        <div className="flex flex-row gap-5">
-            <DriverResultsList results={resultsA} />
-            {driverB ? <DriverResultsList results={resultsB} /> : <></>}
-            {driverC ? <DriverResultsList results={resultsC} /> : <></>}
-        </div>
-      </div>
+          {/*Displaying the race results for the selected drivers in a list format, with conditional rendering based on the number of selected drivers*/}
+          <div className="flex flex-col gap-4 my-4 w-full">
+            <DriverResultsList results={resultsA} driverName={driverA?.LastName} />
+            {driverB ? (
+              <DriverResultsList results={resultsB} driverName={driverB?.LastName} />
+            ) : (
+              <></>
+            )}
+            {driverC ? (
+              <DriverResultsList results={resultsC} driverName={driverC?.LastName} />
+            ) : (
+              <></>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

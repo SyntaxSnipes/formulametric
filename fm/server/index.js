@@ -10,6 +10,7 @@ const app = express();
 //setting up CORS for front-end and back-end to work better.
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://127.0.0.1:5173",
   "https://formulametric.com",
   "https://www.formulametric.com",
 ];
@@ -33,6 +34,6 @@ app.use(
 );
 
 //start express server on defined port
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on http://localhost:${process.env.PORT}`);
+app.listen(process.env.PORT || 5000, () => {
+  console.log(`Server running on http://localhost:${process.env.PORT || 5000}`);
 });

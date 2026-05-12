@@ -9,9 +9,9 @@ export default function SelectedDriversList({
   year,
 }) {
   return (
-    <div className="flex flex-col align-center justify-center gap-5 mt-5">
+    <div className="flex flex-col gap-5 w-full">
       <h2 className=" text-2xl text-center">Selected Drivers:</h2>
-      <div className="flex flex-row gap-5">
+      <div className="flex flex-wrap gap-2 sm:gap-4 w-full justify-center">
         {/*mapping through the selected drivers and rendering a DriverCard for each, passing necessary props for displaying driver info*/}
         {selectedDrivers.map((driver) => (
           <DriverCard

@@ -13,14 +13,21 @@ export default function GaugePointer({ color }) {
   };
 
   return (
-    <g>
-      <circle cx={cx} cy={cy} r={4} fill={color} />
+    <g style={{ pointerEvents: 'none' }}>
+      <circle 
+        cx={cx} 
+        cy={cy} 
+        r={4} 
+        fill={color}
+        style={{ willChange: 'transform' }}
+      />
       <path
         d={`M ${cx} ${cy} L ${target.x} ${target.y}`}
         stroke={color}
         strokeWidth={2}
+        strokeLinecap="round"
+        style={{ willChange: 'transform' }}
       />
-      <text x={cx} y={cy} textAnchor="middle" dy="0.35em" fill="#ffffff"></text>
     </g>
   );
 }

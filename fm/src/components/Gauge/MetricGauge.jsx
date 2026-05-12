@@ -9,11 +9,13 @@ import GaugePointer from "./GaugePointer";
 //creating MetricGauge component to display a gauge chart for a specific performance metric, with the value, title, and color passed as props
 export default function MetricGauge({value, title, color}) {
   return (
-    <div className="flex flex-col items-center text-white z-0">
+    <div className="flex flex-col items-center text-white" style={{ isolation: 'isolate' }}>
       <GaugeContainer
+        width={120}
+        height={120}
         min={0}
         max={100}
-        value={value * 100} //value as a percentage
+        value={value * 100}
         startAngle={-90}
         endAngle={90}
       >
@@ -21,8 +23,8 @@ export default function MetricGauge({value, title, color}) {
         <GaugeValueArc />
         <GaugePointer color={color} metricValue={value * 100} />
       </GaugeContainer>
-      <p className="text-sm text-white mt-1">{title}</p>
-      <p className="text-xs text-white/60">{(value * 100).toFixed(1)}%</p> {/*displaying the value as a percentage with 1 decimal place*/}
+      <p className="text-xs sm:text-sm text-white mt-1">{title}</p>
+      <p className="text-[11px] sm:text-xs text-white/60">{(value * 100).toFixed(1)}%</p> {/*displaying the value as a percentage with 1 decimal place*/}
     </div>
   );
 }

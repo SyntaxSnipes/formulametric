@@ -16,6 +16,6 @@ export default function decideDriverIcon(driver, year, isRanking) {
 
   //returns different versions of the image, with different styling
   return (
-    isRanking ? <img src={img} alt={driver.LastName} className="w-[110px] h-full object-cover" /> : <img src={img} alt={driver.LastName} className="w-[110px] h-full object-cover rounded-s-xl" />
+    isRanking ? <img src={img} alt={driver.LastName} className="w-[80px] sm:w-[110px] h-full object-cover rounded-lg" /> : <img src={img} alt={driver.LastName} className="w-[70px] sm:w-[90px] lg:w-[110px] h-full object-cover rounded-s-xl" />
   );
 }

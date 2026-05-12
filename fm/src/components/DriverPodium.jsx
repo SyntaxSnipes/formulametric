@@ -9,9 +9,10 @@ import DriverPodiumCard from "./DriverPodiumCard";
 function DriverPodium() {
   const [drivers, setDrivers] = useState([]); //state to hold the driver data fetched from the backend
   const [loading, setLoading] = useState(true); //state to track whether the data is still loading, used to show a loading screen while fetching data
-  //whenever the year changes, load the driver data and store in in drivers state
+
+  //whenever the component mounts, fetch the top 3 drivers for 2025
   useEffect(() => {
-    setLoading(true); //set loading to true whenever the year changes or the page is refreshed
+    setLoading(true);
     fetch(`${import.meta.env.VITE_API_URL}/api/drivers/2025/top3`)
       .then((res) => res.json())
       .then((data) => {
@@ -26,11 +27,13 @@ function DriverPodium() {
   }, []);
 
   return (
-    <div className="flex flex-col justify-center gap-5 mt-5">
+    <div className="flex flex-col justify-center gap-5 mt-5 w-full">
       {!loading ? (
         <>
           <h2 className="text-2xl text-center">FormulaMetric's 2025 Podium</h2>
-          <div className="flex flex-row gap-5 items-end max-w-6xl w-full mx-auto">
+          {/*on mobile: full width. on desktop: constrained to fit content, centered*/}
+          <div className="flex flex-row items-end justify-center w-full px-2 sm:px-0 gap-2 sm:gap-4">
+            {/*2nd place*/}
             <DriverPodiumCard
               key={drivers[1].DriverID}
               driver={drivers[1]}
@@ -39,6 +42,7 @@ function DriverPodium() {
               decideDriverFlag={decideDriverFlag}
               year={2025}
             />
+            {/*1st place*/}
             <DriverPodiumCard
               key={drivers[0].DriverID}
               driver={drivers[0]}
@@ -47,6 +51,7 @@ function DriverPodium() {
               decideDriverFlag={decideDriverFlag}
               year={2025}
             />
+            {/*3rd place*/}
             <DriverPodiumCard
               key={drivers[2].DriverID}
               driver={drivers[2]}
